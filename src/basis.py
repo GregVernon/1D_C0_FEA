@@ -33,6 +33,16 @@ def symLegendreBasis( degree ):
     p = term_1 * term_3
     p = sympy.simplify( p )
     return p, x
+
+def rootsLegendreBasis( degree ):
+    if ( degree <= 0 ):
+        raise Exception( "DEGREE_MUST_BE_NATURAL_NUMBER" )
+    p, x = symLegendreBasis( degree )
+    roots = sympy.roots( p, x )
+    roots = list( roots.keys() )
+    roots.sort()
+    return roots
+
 class Test_evalBernsteinBasis( unittest.TestCase ):
     def test_outside_domain( self ):
         with self.assertRaises( Exception ) as context:
@@ -161,3 +171,18 @@ class Test_symLegendreBasis( unittest.TestCase ):
                     self.assertTrue( sympy.integrate( p1 * p2, ( x, -1, 1) ) != 0 )
                 else:
                     self.assertAlmostEqual( first = sympy.integrate( p1 * p2, ( x, -1, 1) ), second = 0, delta = 1e-12 )
+
+class Test_rootsLegendreBasis( unittest.TestCase ):  
+    def test_non_natural_number( self ):
+        with self.assertRaises( Exception ) as context:
+            r = rootsLegendreBasis( 0 )
+        self.assertEqual( "DEGREE_MUST_BE_NATURAL_NUMBER", str( context.exception ) )
+    
+    def test_finds_roots( self ):
+        x = sympy.symbols( 'x' )
+        max_degree = 10
+        for degree in range( 1, max_degree ):
+            r = rootsLegendreBasis( degree )
+            self.assertIsInstance( r, list )
+            self.assertTrue( len( r ) == degree )
+        
