@@ -1,6 +1,6 @@
 import unittest
 import math
-import basis
+from . import basis
 import sympy
 
 def getGaussLegendreQuadrature( num_points ):
