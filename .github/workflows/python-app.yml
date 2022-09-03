@@ -39,3 +39,4 @@ jobs:
       run: |
         python -m unittest src/mesh.py
         python -m unittest src/basis.py
+        python -m unittest src/quadrature.py
