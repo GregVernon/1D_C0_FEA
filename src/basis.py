@@ -161,12 +161,11 @@ class Test_symLegendreBasis( unittest.TestCase ):
         self.assertEqual( first = x, second = sympy.symbols( 'x' ) )
     
     def test_orthogonality( self ):
-        x = sympy.symbols( 'x' )
         max_degree = 4
         for degree_1 in range( 0, max_degree ):
-            p1 = symLegendreBasis( degree_1 )
+            p1, x = symLegendreBasis( degree_1 )
             for degree_2 in range( 0, max_degree ):
-                p2 = symLegendreBasis( degree_2 )
+                p2, _ = symLegendreBasis( degree_2 )
                 if ( degree_1 == degree_2 ):
                     self.assertTrue( sympy.integrate( p1 * p2, ( x, -1, 1) ) != 0 )
                 else:
