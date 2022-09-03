@@ -1,5 +1,7 @@
 import unittest
 import math
+import sympy
+
 def evalBernsteinBasis( degree, basis_idx, deriv, variate ):
     if ( variate < -1.0 ) or ( variate > +1.0 ):
         raise Exception( "NOT_IN_DOMAIN" )
@@ -23,6 +25,14 @@ def evalBernsteinBasis( degree, basis_idx, deriv, variate ):
             basis_val = term_1 * term_2 * term_3
     return basis_val
 
+def symLegendreBasis( degree ):
+    x = sympy.symbols( 'x' )
+    term_1 = 1.0 / ( ( 2.0 ** degree ) * sympy.factorial( degree ) )
+    term_2 = ( ( x**2) - 1.0 ) ** degree 
+    term_3 = sympy.diff( term_2, x, degree )
+    p = term_1 * term_3
+    p = sympy.simplify( p )
+    return p, x
 class Test_evalBernsteinBasis( unittest.TestCase ):
     def test_outside_domain( self ):
         with self.assertRaises( Exception ) as context:
@@ -134,3 +144,20 @@ class Test_evalBernsteinBasis( unittest.TestCase ):
         self.assertAlmostEqual( first = evalBernsteinBasis( degree = 2, basis_idx = 1, deriv = 2, variate = x[1] ), second = -1.0, delta = 1e-12 )
         self.assertAlmostEqual( first = evalBernsteinBasis( degree = 2, basis_idx = 2, deriv = 2, variate = x[0] ), second = +0.5, delta = 1e-12 )
         self.assertAlmostEqual( first = evalBernsteinBasis( degree = 2, basis_idx = 2, deriv = 2, variate = x[1] ), second = +0.5, delta = 1e-12 )
+    
+class Test_symLegendreBasis( unittest.TestCase ):
+    def test_get_symbol( self ):
+        p, x = symLegendreBasis( 2 )
+        self.assertEqual( first = x, second = sympy.symbols( 'x' ) )
+    
+    def test_orthogonality( self ):
+        x = sympy.symbols( 'x' )
+        max_degree = 4
+        for degree_1 in range( 0, max_degree ):
+            p1 = symLegendreBasis( degree_1 )
+            for degree_2 in range( 0, max_degree ):
+                p2 = symLegendreBasis( degree_2 )
+                if ( degree_1 == degree_2 ):
+                    self.assertTrue( sympy.integrate( p1 * p2, ( x, -1, 1) ) != 0 )
+                else:
+                    self.assertAlmostEqual( first = sympy.integrate( p1 * p2, ( x, -1, 1) ), second = 0, delta = 1e-12 )
