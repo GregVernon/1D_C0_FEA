@@ -1,5 +1,6 @@
 import unittest
 import math
+import numpy
 import sympy
 
 def evalBernsteinBasis( degree, basis_idx, deriv, variate ):
@@ -24,6 +25,18 @@ def evalBernsteinBasis( degree, basis_idx, deriv, variate ):
             term_3 = ( 1.0 - param_variate ) ** ( degree - basis_idx )
             basis_val = term_1 * term_2 * term_3
     return basis_val
+
+def evalLegendreBasis1D( degree, variate ):
+    if ( degree == 0 ):
+        basis_val = 1.0
+    elif ( degree == 1 ):
+        basis_val = variate
+    else:
+        i = degree - 1
+        term_1 = ( ( 2 * i ) + 1 ) * variate * evalLegendreBasis1D( degree = i, variate = variate )
+        term_2 = i * evalLegendreBasis1D( degree = i - 1, variate = variate )
+        basis_val = ( term_1 - term_2 ) / ( i + 1 )
+    return basis_val 
 
 def symLegendreBasis( degree ):
     x = sympy.symbols( 'x' )
@@ -154,7 +167,34 @@ class Test_evalBernsteinBasis( unittest.TestCase ):
         self.assertAlmostEqual( first = evalBernsteinBasis( degree = 2, basis_idx = 1, deriv = 2, variate = x[1] ), second = -1.0, delta = 1e-12 )
         self.assertAlmostEqual( first = evalBernsteinBasis( degree = 2, basis_idx = 2, deriv = 2, variate = x[0] ), second = +0.5, delta = 1e-12 )
         self.assertAlmostEqual( first = evalBernsteinBasis( degree = 2, basis_idx = 2, deriv = 2, variate = x[1] ), second = +0.5, delta = 1e-12 )
+
+class Test_evalLegendreBasis1D( unittest.TestCase ):
+    def test_basisAtBounds( self ):
+        for p in range( 0, 2 ):
+            if ( p % 2 == 0 ):
+                self.assertAlmostEqual( first = evalLegendreBasis1D( degree = p, variate = -1 ), second = +1.0, delta = 1e-12 )
+            else:
+                self.assertAlmostEqual( first = evalLegendreBasis1D( degree = p, variate = -1 ), second = -1.0, delta = 1e-12 )
+            self.assertAlmostEqual( first = evalLegendreBasis1D( degree = p, variate = +1 ), second = 1.0, delta = 1e-12 )
     
+    def test_constant( self ):
+        for x in numpy.linspace( -1, 1, 100 ):
+            self.assertAlmostEqual( first = evalLegendreBasis1D( degree = 0, variate = x ), second = 1.0, delta = 1e-12 )
+    
+    def test_linear( self ):
+        for x in numpy.linspace( -1, 1, 100 ):
+            self.assertAlmostEqual( first = evalLegendreBasis1D( degree = 1, variate = x ), second = x, delta = 1e-12 )
+    
+    def test_quadratic_at_roots( self ):
+        self.assertAlmostEqual( first = evalLegendreBasis1D( degree = 2, variate = -1.0 / math.sqrt(3.0) ), second = 0.0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalLegendreBasis1D( degree = 2, variate = +1.0 / math.sqrt(3.0) ), second = 0.0, delta = 1e-12 )
+    
+    def test_cubic_at_roots( self ):
+        self.assertAlmostEqual( first = evalLegendreBasis1D( degree = 3, variate = -math.sqrt( 3 / 5 ) ), second = 0.0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalLegendreBasis1D( degree = 3, variate = 0 ), second = 0.0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalLegendreBasis1D( degree = 3, variate = +math.sqrt( 3 / 5 ) ), second = 0.0, delta = 1e-12 )
+
+
 class Test_symLegendreBasis( unittest.TestCase ):
     def test_get_symbol( self ):
         p, x = symLegendreBasis( 2 )
