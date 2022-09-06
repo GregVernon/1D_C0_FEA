@@ -3,6 +3,11 @@ import math
 import numpy
 import sympy
 
+def changeOfBasis( b1, b2, x1 ):
+    T = numpy.linalg.solve( b2, b1 )
+    x2 = numpy.dot( T, x1 )
+    return x2, T
+
 def evalMonomialBasis1D( degree, variate ):
     return variate ** degree
 
@@ -59,6 +64,26 @@ def rootsLegendreBasis( degree ):
     roots.sort()
     return roots
 
+class Test_changeOfBasis( unittest.TestCase ):
+    def test_standardR2BasisRotate( self ):
+        b1 = numpy.eye(2)
+        b2 = numpy.array([ [0, 1], [-1, 0] ] ).T
+        x1 = numpy.array( [0.5, 0.5] ).T
+        x2, T = changeOfBasis( b1, b2, x1 )
+        v1 = b1 @ x1
+        v2 = b2 @ x2
+        self.assertTrue( numpy.allclose( v1, v2 ) )
+    
+    def test_standardR2BasisSkew( self ):
+        b1 = numpy.eye(2)
+        b2 = numpy.array([ [0, 1], [0.5, 0.5] ] ).T
+        x1 = numpy.array( [0.5, 0.5] ).T
+        x2, T = changeOfBasis( b1, b2, x1 )
+        v1 = b1 @ x1
+        v2 = b2 @ x2
+        self.assertTrue( numpy.allclose( x2, numpy.array( [0.0, 1.0] ) ) )
+        self.assertTrue( numpy.allclose( v1, v2 ) )
+    
 class Test_evalMonomialBasis1D( unittest.TestCase ):
     def test_basisAtBounds( self ):
         self.assertAlmostEqual( first = evalMonomialBasis1D( degree = 0, variate = 0 ), second = 1.0, delta = 1e-12 )
