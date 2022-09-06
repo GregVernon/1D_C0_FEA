@@ -3,6 +3,9 @@ import math
 import numpy
 import sympy
 
+def evalMonomialBasis1D( degree, variate ):
+    return variate ** degree
+
 def evalBernsteinBasis( degree, basis_idx, deriv, variate ):
     if ( variate < -1.0 ) or ( variate > +1.0 ):
         raise Exception( "NOT_IN_DOMAIN" )
@@ -55,6 +58,18 @@ def rootsLegendreBasis( degree ):
     roots = list( roots.keys() )
     roots.sort()
     return roots
+
+class Test_evalMonomialBasis1D( unittest.TestCase ):
+    def test_basisAtBounds( self ):
+        self.assertAlmostEqual( first = evalMonomialBasis1D( degree = 0, variate = 0 ), second = 1.0, delta = 1e-12 )
+        for p in range( 1, 11 ):
+            self.assertAlmostEqual( first = evalMonomialBasis1D( degree = p, variate = 0 ), second = 0.0, delta = 1e-12 )
+            self.assertAlmostEqual( first = evalMonomialBasis1D( degree = p, variate = 1 ), second = 1.0, delta = 1e-12 )
+
+    def test_basisAtMidpoint( self ):
+        for p in range( 0, 11 ):
+            self.assertAlmostEqual( first = evalMonomialBasis1D( degree = p, variate = 0.5 ), second = 1 / ( 2**p ), delta = 1e-12 )
+
 
 class Test_evalBernsteinBasis( unittest.TestCase ):
     def test_outside_domain( self ):
