@@ -1,6 +1,7 @@
 import numpy
 import matplotlib.pyplot as plt
 import unittest
+from scipy import special
 from . import basis
 
 def generateMesh( xmin, xmax, num_elems, degree ):
@@ -47,7 +48,7 @@ def plotMeshBasis( ien_array, node_coords, coeff, basisEval, color_by ):
             curr_node = elem_nodes[n]
             for i in range( 0, len( xi ) ):
                 x[i] = paramToRefCoords( xi[i], elem_domain )
-                y[i] = coeff[curr_node] * basis.evalLagrangeBasis1D( degree = degree, basis_idx = n, variate = xi[i] )
+                y[i] = coeff[curr_node] * basisEval( degree = degree, basis_idx = n, variate = xi[i] )
             if ( color_by == "GLOBAL_ID" ):
                 color_idx = curr_node % len( colors )
             elif ( color_by == "ELEMENT_ID" ):
@@ -143,19 +144,34 @@ class Test_plotBasisMesh( unittest.TestCase ):
     def test_3_linear_lagrange( self ):
         node_coords, ien_array = generateMesh( 0, 4, 3, 1 )
         coeff = numpy.ones( shape = node_coords.shape[0] )
-        plotMeshBasis( ien_array = ien_array, node_coords = node_coords, coeff = coeff, basisEval = [], color_by = "GLOBAL_ID" )
+        plotMeshBasis( ien_array = ien_array, node_coords = node_coords, coeff = coeff, basisEval = basis.evalLagrangeBasis1D, color_by = "GLOBAL_ID" )
 
     def test_3_quadratic_lagrange( self ):
         node_coords, ien_array = generateMesh( 0, 4, 3, 2 )
         coeff = numpy.ones( shape = node_coords.shape[0] )
-        plotMeshBasis( ien_array = ien_array, node_coords = node_coords, coeff = coeff, basisEval = [], color_by = "GLOBAL_ID" )
+        plotMeshBasis( ien_array = ien_array, node_coords = node_coords, coeff = coeff, basisEval = basis.evalLagrangeBasis1D, color_by = "GLOBAL_ID" )
+
+    def test_3_quadratic_bernstein( self ):
+        node_coords, ien_array = generateMesh( 0, 4, 3, 2 )
+        coeff = numpy.ones( shape = node_coords.shape[0] )
+        plotMeshBasis( ien_array = ien_array, node_coords = node_coords, coeff = coeff, basisEval = basis.evalBernsteinBasis1D, color_by = "GLOBAL_ID" )
 
     def test_10_linear_lagrange( self ):
         node_coords, ien_array = generateMesh( 0, 11, 10, 1 )
         coeff = numpy.ones( shape = node_coords.shape[0] )
-        plotMeshBasis( ien_array = ien_array, node_coords = node_coords, coeff = coeff, basisEval = [], color_by = "GLOBAL_ID" )
+        plotMeshBasis( ien_array = ien_array, node_coords = node_coords, coeff = coeff, basisEval = basis.evalLagrangeBasis1D, color_by = "GLOBAL_ID" )
 
     def test_10_quadratic_lagrange( self ):
         node_coords, ien_array = generateMesh( 0, 11, 10, 2 )
         coeff = numpy.ones( shape = node_coords.shape[0] )
-        plotMeshBasis( ien_array = ien_array, node_coords = node_coords, coeff = coeff, basisEval = [], color_by = "GLOBAL_ID" )
+        plotMeshBasis( ien_array = ien_array, node_coords = node_coords, coeff = coeff, basisEval = basis.evalLagrangeBasis1D, color_by = "GLOBAL_ID" )
+    
+    def test_approx_erfc_10_linear_lagrange( self ):
+        node_coords, ien_array = generateMesh( -2, 2, 10, 1 )
+        coeff = scipy.special.erfc( node_coords )
+        plotMeshBasis( ien_array = ien_array, node_coords = node_coords, coeff = coeff, basisEval = basis.evalLagrangeBasis1D, color_by = "GLOBAL_ID" )
+    
+    def test_approx_erfc_10_quadratic_lagrange( self ):
+        node_coords, ien_array = generateMesh( -2, 2, 10, 2 )
+        coeff = scipy.special.erfc( node_coords )
+        plotMeshBasis( ien_array = ien_array, node_coords = node_coords, coeff = coeff, basisEval = basis.evalLagrangeBasis1D, color_by = "GLOBAL_ID" )
