@@ -18,6 +18,20 @@ def generateMesh( xmin, xmax, num_elems, degree ):
     node_coords = numpy.linspace( xmin, xmax, num = num_nodes )
     return node_coords, ien_array
 
+def refToParamCoords( x_ref, reference_domain ):
+    A = numpy.array( [ [ 1.0, reference_domain[0] ], [ 1.0, reference_domain[1] ] ] )
+    b = numpy.array( [ -1.0, 1.0 ] )
+    c = numpy.linalg.solve( A, b )
+    x_ref = c[0] + c[1] * x_ref
+    return x_ref
+
+def paramToRefCoords( x_param, reference_domain ):
+    A = numpy.array( [ [ 1.0, -1.0 ], [ 1.0, 1.0 ] ] )
+    b = numpy.array( [ reference_domain[0], reference_domain[1] ] )
+    c = numpy.linalg.solve( A, b )
+    x_ref = c[0] + c[1] * x_param
+    return x_ref
+
 def plotMeshBasis( ien_array, node_coords, coeff, basisEval, color_by ):
     fig, ax = plt.subplots()
     colors = plt.cm.Dark2_r.colors
@@ -43,20 +57,6 @@ def plotMeshBasis( ien_array, node_coords, coeff, basisEval, color_by ):
             ax.plot(x, y, linewidth=2.0, color = colors[ color_idx ] )
     plt.show()
     return fig, ax, plt
-
-def refToParamCoords( x_ref, reference_domain ):
-    A = numpy.array( [ [ 1.0, reference_domain[0] ], [ 1.0, reference_domain[1] ] ] )
-    b = numpy.array( [ -1.0, 1.0 ] )
-    c = numpy.linalg.solve( A, b )
-    x_ref = c[0] + c[1] * x_ref
-    return x_ref
-
-def paramToRefCoords( x_param, reference_domain ):
-    A = numpy.array( [ [ 1.0, -1.0 ], [ 1.0, 1.0 ] ] )
-    b = numpy.array( [ reference_domain[0], reference_domain[1] ] )
-    c = numpy.linalg.solve( A, b )
-    x_ref = c[0] + c[1] * x_param
-    return x_ref
 
 class Test_refToParamCoords( unittest.TestCase ):
     def test_unit_to_biunit( self ):
