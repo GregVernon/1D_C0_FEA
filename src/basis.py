@@ -19,6 +19,16 @@ def evalLagrangeBasis1D( degree, basis_idx, variate ):
             basis_val *= ( variate - nodes[i] ) / ( nodes[basis_idx] - nodes[i] )
     return basis_val
 
+def evalBernsteinBasis1D( degree, basis_idx, variate ):
+    if ( variate < -1.0 ) or ( variate > +1.0 ):
+        raise Exception( "NOT_IN_DOMAIN" )
+    param_variate = (1/2) * ( variate + 1.0 )
+    term_1 = math.comb( degree, basis_idx )
+    term_2 = param_variate ** basis_idx
+    term_3 = ( 1.0 - param_variate ) ** ( degree - basis_idx )
+    basis_val = term_1 * term_2 * term_3
+    return basis_val
+
 def evalBernsteinBasisDeriv( degree, basis_idx, deriv, variate ):
     if ( variate < -1.0 ) or ( variate > +1.0 ):
         raise Exception( "NOT_IN_DOMAIN" )
