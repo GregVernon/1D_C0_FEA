@@ -11,6 +11,14 @@ def changeOfBasis( b1, b2, x1 ):
 def evalMonomialBasis1D( degree, variate ):
     return variate ** degree
 
+def evalLagrangeBasis1D( degree, basis_idx, variate ):
+    nodes = numpy.linspace( -1.0, 1.0, degree + 1 )
+    basis_val = 1
+    for i in range( 0, degree + 1 ):
+        if ( i != basis_idx ):
+            basis_val *= ( variate - nodes[i] ) / ( nodes[basis_idx] - nodes[i] )
+    return basis_val
+
 def evalBernsteinBasis( degree, basis_idx, deriv, variate ):
     if ( variate < -1.0 ) or ( variate > +1.0 ):
         raise Exception( "NOT_IN_DOMAIN" )
