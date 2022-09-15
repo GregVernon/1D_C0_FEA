@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 import unittest
 import scipy
 from scipy import special
-import basis
-import mesh
+from . import basis
+from . import mesh
 
 def plotPiecewiseFunctionFit( ien_array, node_coords, coeff, basisEval, options ):
     fig, ax = plt.subplots()
