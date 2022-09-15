@@ -118,46 +118,46 @@ class Test_plotBasisMesh( unittest.TestCase ):
     def test_3_linear_lagrange( self ):
         node_coords, ien_array = mesh.generateMesh( 0, 4, 3, 1 )
         coeff = numpy.ones( shape = node_coords.shape[0] )
-        plotMeshBasis( ien_array = ien_array, node_coords = node_coords, coeff = coeff, basisEval = basis.evalLagrangeBasis1D, color_by = "GLOBAL_ID" )
+        plotMeshBasis( ien_array = ien_array, node_coords = node_coords, coeff = coeff, basisEval = basis.evalLagrangeBasis1D, handles = [], color_by = "GLOBAL_ID" )
 
     def test_3_quadratic_lagrange( self ):
         node_coords, ien_array = mesh.generateMesh( 0, 4, 3, 2 )
         coeff = numpy.ones( shape = node_coords.shape[0] )
-        plotMeshBasis( ien_array = ien_array, node_coords = node_coords, coeff = coeff, basisEval = basis.evalLagrangeBasis1D, color_by = "GLOBAL_ID" )
+        plotMeshBasis( ien_array = ien_array, node_coords = node_coords, coeff = coeff, basisEval = basis.evalLagrangeBasis1D, handles = [], color_by = "GLOBAL_ID" )
 
     def test_3_quadratic_bernstein( self ):
         node_coords, ien_array = mesh.generateMesh( 0, 4, 3, 2 )
         coeff = numpy.ones( shape = node_coords.shape[0] )
-        plotMeshBasis( ien_array = ien_array, node_coords = node_coords, coeff = coeff, basisEval = basis.evalBernsteinBasis1D, color_by = "GLOBAL_ID" )
+        plotMeshBasis( ien_array = ien_array, node_coords = node_coords, coeff = coeff, basisEval = basis.evalBernsteinBasis1D, handles = [], color_by = "GLOBAL_ID" )
 
     def test_10_linear_lagrange( self ):
         node_coords, ien_array = mesh.generateMesh( 0, 11, 10, 1 )
         coeff = numpy.ones( shape = node_coords.shape[0] )
-        plotMeshBasis( ien_array = ien_array, node_coords = node_coords, coeff = coeff, basisEval = basis.evalLagrangeBasis1D, color_by = "GLOBAL_ID" )
+        plotMeshBasis( ien_array = ien_array, node_coords = node_coords, coeff = coeff, basisEval = basis.evalLagrangeBasis1D, handles = [], color_by = "GLOBAL_ID" )
 
     def test_10_quadratic_lagrange( self ):
         node_coords, ien_array = mesh.generateMesh( 0, 11, 10, 2 )
         coeff = numpy.ones( shape = node_coords.shape[0] )
-        plotMeshBasis( ien_array = ien_array, node_coords = node_coords, coeff = coeff, basisEval = basis.evalLagrangeBasis1D, color_by = "GLOBAL_ID" )
+        plotMeshBasis( ien_array = ien_array, node_coords = node_coords, coeff = coeff, basisEval = basis.evalLagrangeBasis1D, handles = [], color_by = "GLOBAL_ID" )
     
     def test_approx_erfc_10_linear_lagrange( self ):
         node_coords, ien_array = mesh.generateMesh( -2, 2, 10, 1 )
         coeff = scipy.special.erfc( node_coords )
-        plotMeshBasis( ien_array = ien_array, node_coords = node_coords, coeff = coeff, basisEval = basis.evalLagrangeBasis1D, color_by = "GLOBAL_ID" )
+        plotMeshBasis( ien_array = ien_array, node_coords = node_coords, coeff = coeff, basisEval = basis.evalLagrangeBasis1D, handles = [], color_by = "GLOBAL_ID" )
     
     def test_approx_erfc_10_quadratic_lagrange( self ):
         node_coords, ien_array = mesh.generateMesh( -2, 2, 10, 2 )
         coeff = scipy.special.erfc( node_coords )
-        plotMeshBasis( ien_array = ien_array, node_coords = node_coords, coeff = coeff, basisEval = basis.evalLagrangeBasis1D, color_by = "GLOBAL_ID" )
+        plotMeshBasis( ien_array = ien_array, node_coords = node_coords, coeff = coeff, basisEval = basis.evalLagrangeBasis1D, handles = [], color_by = "GLOBAL_ID" )
 
 class Test_plotPiecewiseApproximation( unittest.TestCase ):
     def test_approx_erfc_10_quadratic_lagrange( self ):
         node_coords, ien_array = mesh.generateMesh( -2, 2, 2, 2 )
         coeff = scipy.special.erfc( node_coords )
-        plotPiecewiseApproximation( ien_array = ien_array, node_coords = node_coords, coeff = coeff, basisEval = basis.evalLagrangeBasis1D, color_by = "ELEMENT_ID" )
+        plotPiecewiseApproximation( ien_array = ien_array, node_coords = node_coords, coeff = coeff, basisEval = basis.evalLagrangeBasis1D, handles = [], color_by = "ELEMENT_ID" )
 
 class Test_plotPiecewiseApproximationCoeffs( unittest.TestCase ):
     def test_approx_erfc_10_quadratic_lagrange( self ):
         node_coords, ien_array = mesh.generateMesh( -2, 2, 2, 2 )
         coeff = scipy.special.erfc( node_coords )
-        plotPiecewiseApproximationCoeffs( ien_array = ien_array, node_coords = node_coords, coeff = coeff, color_by = "GLOBAL_ID" )
+        plotPiecewiseApproximationCoeffs( ien_array = ien_array, node_coords = node_coords, coeff = coeff, handles = [], color_by = "GLOBAL_ID" )
