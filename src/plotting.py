@@ -1,4 +1,5 @@
 import numpy
+import matplotlib
 import matplotlib.pyplot as plt
 import unittest
 import scipy
@@ -6,9 +7,12 @@ from scipy import special
 from . import basis
 from . import mesh
 
+matplotlib.use('TkAgg')
+
 def plotPiecewiseFunctionFit( ien_array, node_coords, coeff, basisEval, options ):
     fig, ax = plt.subplots()
     handles = { "fig": fig, "ax": ax }
+    ax = plotMeshElementBoundaries( ien_array, node_coords, handles )
     ax = plotMeshBasis( ien_array, node_coords, coeff, basisEval, handles, options["plotMeshBasis"]["color_by"] )
     ax = plotPiecewiseApproximation( ien_array, node_coords, coeff, basisEval, handles, options["plotPiecewiseApproximation"]["color_by"] )
     ax = plotPiecewiseApproximationCoeffs( ien_array, node_coords, coeff, handles, options["plotPiecewiseApproximationCoeffs"]["color_by"] )
@@ -94,22 +98,44 @@ def plotMeshBasis( ien_array, node_coords, coeff, basisEval, handles, color_by )
     handles = { "fig": fig, "ax": ax }
     return handles
 
+def plotMeshElementBoundaries( ien_array, node_coords, handles ):
+    if ( not handles ):
+        fig, ax = plt.subplots()
+    else: 
+        ax = handles[ "ax" ]
+        fig = handles[ "ax" ]
+    num_elems = ien_array.shape[0]
+    for e in range( 0, num_elems ):
+        elem_nodes = ien_array[e]
+        elem_domain = [ node_coords[ elem_nodes[0] ], node_coords[ elem_nodes[-1] ] ]
+        if ( e == 0 ):
+            ax.axvline( x = elem_domain[0], linestyle = "-" )
+            ax.axvline( x = elem_domain[1], linestyle = "--" )
+        elif ( e == (num_elems - 1 ) ):
+            ax.axvline( x = elem_domain[1], linestyle = "-" )
+        else:
+            ax.axvline( x = elem_domain[1], linestyle = "--" )
+            
+    if ( not handles ):
+        plt.show()
+    handles = { "fig": fig, "ax": ax }
+    return handles
 
 class Test_plotPiecwiseFunctionFit( unittest.TestCase ):
-    def test_erfc_linear_lagrange( self ):
-        node_coords, ien_array = mesh.generateMesh( -2, 2, 3, 1 )
-        coeff = scipy.special.erfc( node_coords )
+    def test_sin_quadratic_lagrange( self ):
+        node_coords, ien_array = mesh.generateMesh( -1, 1, 3, 2 )
+        coeff = numpy.sin( numpy.pi * node_coords )
+        options = { "plotMeshBasis": {"color_by": "GLOBAL_ID"}, "plotPiecewiseApproximation": {"color_by": "ELEMENT_ID"}, "plotPiecewiseApproximationCoeffs": {"color_by": "GLOBAL_ID"} }
+        plotPiecewiseFunctionFit( ien_array = ien_array, node_coords = node_coords, coeff = coeff, basisEval = basis.evalLagrangeBasis1D, options = options )
+
+    def test_exp_quadratic_lagrange( self ):
+        node_coords, ien_array = mesh.generateMesh( -1, 1, 3, 2 )
+        coeff = numpy.exp( node_coords )
         options = { "plotMeshBasis": {"color_by": "GLOBAL_ID"}, "plotPiecewiseApproximation": {"color_by": "ELEMENT_ID"}, "plotPiecewiseApproximationCoeffs": {"color_by": "GLOBAL_ID"} }
         plotPiecewiseFunctionFit( ien_array = ien_array, node_coords = node_coords, coeff = coeff, basisEval = basis.evalLagrangeBasis1D, options = options )
 
     def test_erfc_quadratic_lagrange( self ):
         node_coords, ien_array = mesh.generateMesh( -2, 2, 3, 2 )
-        coeff = scipy.special.erfc( node_coords )
-        options = { "plotMeshBasis": {"color_by": "GLOBAL_ID"}, "plotPiecewiseApproximation": {"color_by": "ELEMENT_ID"}, "plotPiecewiseApproximationCoeffs": {"color_by": "GLOBAL_ID"} }
-        plotPiecewiseFunctionFit( ien_array = ien_array, node_coords = node_coords, coeff = coeff, basisEval = basis.evalLagrangeBasis1D, options = options )
-
-    def test_erfc_cubic_lagrange( self ):
-        node_coords, ien_array = mesh.generateMesh( -2, 2, 3, 3 )
         coeff = scipy.special.erfc( node_coords )
         options = { "plotMeshBasis": {"color_by": "GLOBAL_ID"}, "plotPiecewiseApproximation": {"color_by": "ELEMENT_ID"}, "plotPiecewiseApproximationCoeffs": {"color_by": "GLOBAL_ID"} }
         plotPiecewiseFunctionFit( ien_array = ien_array, node_coords = node_coords, coeff = coeff, basisEval = basis.evalLagrangeBasis1D, options = options )
@@ -161,3 +187,8 @@ class Test_plotPiecewiseApproximationCoeffs( unittest.TestCase ):
         node_coords, ien_array = mesh.generateMesh( -2, 2, 2, 2 )
         coeff = scipy.special.erfc( node_coords )
         plotPiecewiseApproximationCoeffs( ien_array = ien_array, node_coords = node_coords, coeff = coeff, handles = [], color_by = "GLOBAL_ID" )
+
+class Test_plotMeshElementBoundaries( unittest.TestCase ):
+    def test_plot_3_elems( self ):
+        node_coords, ien_array = mesh.generateMesh( 0, 3, 3, 1 )
+        plotMeshElementBoundaries( ien_array = ien_array, node_coords = node_coords, handles = [] )
