@@ -126,7 +126,29 @@ def plotMeshElementBoundaries( ien_array, node_coords, handles ):
     handles = { "fig": fig, "ax": ax }
     return handles
 
+def plotFunction( fun, domain, handles ):
+    if ( not handles ):
+        fig, ax = plt.subplots()
+    else: 
+        ax = handles[ "ax" ]
+        fig = handles[ "ax" ]
+    x = numpy.linspace( domain[0], domain[1] )          
+    ax.plot(x, fun( x ), linewidth=2.0, color = [0, 0, 0] )
+    if ( not handles ):
+        plt.show()
+    handles = { "fig": fig, "ax": ax }
+    return handles
+
 class Test_plotPiecwiseFunctionFit( unittest.TestCase ):
+    def test_single_element_quad_poly( self ):
+        node_coords, ien_array = mesh.generateMesh( 0, 1, 1, 1 )
+        coeff = node_coords ** 2.0
+        fun = lambda x : x ** 2.0
+        domain = [ 0.0, 1.0 ]
+        # options = { "plotMeshBasis": {"color_by": "GLOBAL_ID"}, "plotPiecewiseApproximation": {"color_by": "ELEMENT_ID"}, "plotPiecewiseApproximationCoeffs": {"color_by": "GLOBAL_ID"} }
+        options = { "plotFunction": {"lambda": fun, "domain": domain}, "plotPiecewiseApproximation": {"color_by": "ELEMENT_ID"}, "plotPiecewiseApproximationCoeffs": {"color_by": "GLOBAL_ID"} }
+        plotPiecewiseFunctionFit( ien_array = ien_array, node_coords = node_coords, coeff = coeff, eval_basis = basis.evalLagrangeBasis1D, options = options )
+    
     def test_sin_quadratic_lagrange( self ):
         node_coords, ien_array = mesh.generateMesh( -1, 1, 3, 2 )
         coeff = numpy.sin( numpy.pi * node_coords )
