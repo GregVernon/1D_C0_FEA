@@ -12,7 +12,8 @@ elif __name__ == "plotting":
     import basis
     import mesh
 
-matplotlib.use('TkAgg')
+## Uncomment this if you want to see figures
+#matplotlib.use('TkAgg')
 
 def plotPiecewiseFunctionFit( ien_array, node_coords, coeff, eval_basis, options ):
     fig, ax = plt.subplots()
