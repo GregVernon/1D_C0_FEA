@@ -1,8 +1,12 @@
 import unittest
 import math
-from . import basis
 import sympy
 import numpy
+
+if __name__ == "src.quadrature":
+    from src import basis
+elif __name__ == "quadrature":
+    import basis
 
 def getGaussLegendreQuadrature( num_points ):
     if num_points == 1:

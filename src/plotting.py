@@ -4,8 +4,13 @@ import matplotlib.pyplot as plt
 import unittest
 import scipy
 from scipy import special
-from . import basis
-from . import mesh
+
+if __name__ == "src.plotting":
+    from src import basis
+    from src import mesh
+elif __name__ == "plotting":
+    import basis
+    import mesh
 
 matplotlib.use('TkAgg')
 
