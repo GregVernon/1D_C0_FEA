@@ -31,6 +31,40 @@ def paramToRefCoords( x_param, reference_domain ):
     x_ref = c[0] + c[1] * x_param
     return x_ref
 
+def getElementIdxContainingPoint( node_coords, ien_array, point ):
+    num_elems = ien_array.shape[0]
+    for e in range( 0, num_elems ):
+        elem_nodes = ien_array[e]
+        elem_domain = [ node_coords[ elem_nodes[0] ], node_coords[ elem_nodes[-1] ] ]
+        if ( ( point >= elem_domain[0] ) and ( point <= elem_domain[1] ) ):
+            return e
+    raise Exception( "ELEMENT_CONTAINING_POINT_NOT_FOUND" )
+
+class Test_getElementIdxContainingPoint( unittest.TestCase ):
+    def test_single_element( self ):
+        node_coords, ien_array = generateMesh( xmin = 0.0, xmax = 1.0, num_elems = 1, degree = 1 )
+        self.assertEqual( first = getElementIdxContainingPoint( node_coords = node_coords, ien_array = ien_array, point = 0.0 ), second = 0 )
+        self.assertEqual( first = getElementIdxContainingPoint( node_coords = node_coords, ien_array = ien_array, point = 0.5 ), second = 0 )
+        self.assertEqual( first = getElementIdxContainingPoint( node_coords = node_coords, ien_array = ien_array, point = 1.0 ), second = 0 )
+    
+    def test_two_elements( self ):
+        node_coords, ien_array = generateMesh( xmin = 0.0, xmax = 2.0, num_elems = 2, degree = 1 )
+        self.assertEqual( first = getElementIdxContainingPoint( node_coords = node_coords, ien_array = ien_array, point = 0.0 ), second = 0 )
+        self.assertEqual( first = getElementIdxContainingPoint( node_coords = node_coords, ien_array = ien_array, point = 0.5 ), second = 0 )
+        self.assertEqual( first = getElementIdxContainingPoint( node_coords = node_coords, ien_array = ien_array, point = 1.0 ), second = 0 )
+        self.assertEqual( first = getElementIdxContainingPoint( node_coords = node_coords, ien_array = ien_array, point = 1.5 ), second = 1 )
+        self.assertEqual( first = getElementIdxContainingPoint( node_coords = node_coords, ien_array = ien_array, point = 2.0 ), second = 1 )
+
+    def test_three_elements( self ):
+        node_coords, ien_array = generateMesh( xmin = 0.0, xmax = 3.0, num_elems = 3, degree = 1 )
+        self.assertEqual( first = getElementIdxContainingPoint( node_coords = node_coords, ien_array = ien_array, point = 0.0 ), second = 0 )
+        self.assertEqual( first = getElementIdxContainingPoint( node_coords = node_coords, ien_array = ien_array, point = 0.5 ), second = 0 )
+        self.assertEqual( first = getElementIdxContainingPoint( node_coords = node_coords, ien_array = ien_array, point = 1.0 ), second = 0 )
+        self.assertEqual( first = getElementIdxContainingPoint( node_coords = node_coords, ien_array = ien_array, point = 1.5 ), second = 1 )
+        self.assertEqual( first = getElementIdxContainingPoint( node_coords = node_coords, ien_array = ien_array, point = 2.0 ), second = 1 )
+        self.assertEqual( first = getElementIdxContainingPoint( node_coords = node_coords, ien_array = ien_array, point = 2.5 ), second = 2 )
+        self.assertEqual( first = getElementIdxContainingPoint( node_coords = node_coords, ien_array = ien_array, point = 3.0 ), second = 2 )
+
 class Test_refToParamCoords( unittest.TestCase ):
     def test_unit_to_biunit( self ):
         unit_domain = numpy.array( [ 0.0, 1.0 ] )
