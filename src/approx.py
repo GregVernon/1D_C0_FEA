@@ -45,6 +45,16 @@ class Test_computeSolution( unittest.TestCase ):
         test_solution, _, _ = computeSolution( target_fun = lambda x : x**2, domain = [-1.0, 1.0 ], num_elems = 1, degree = 2 )
         gold_solution = numpy.array( [ 1.0, 0.0, 1.0 ] )
         self.assertTrue( numpy.allclose( test_solution, gold_solution ) )
+    
+    def test_two_element_linear_poly( self ):
+        test_solution, _, _ = computeSolution( target_fun = lambda x : x**2, domain = [-1.0, 1.0 ], num_elems = 2, degree = 1 )
+        gold_solution = numpy.array( [ 1.0, 0.0, 1.0 ] )
+        self.assertTrue( numpy.allclose( test_solution, gold_solution ) )
+    
+    def test_four_element_linear_poly( self ):
+        test_solution, _, _ = computeSolution( target_fun = lambda x : x**2, domain = [-1.0, 1.0 ], num_elems = 4, degree = 1 )
+        gold_solution = numpy.array( [ 1.0, 0.25, 0.0, 0.25, 1.0 ] )
+        self.assertTrue( numpy.allclose( test_solution, gold_solution ) )
 
 class Test_computeFitError( unittest.TestCase ):
     def test_single_element_quad_poly( self ):
