@@ -8,9 +8,11 @@ from scipy import special
 if __name__ == "src.plotting":
     from src import basis
     from src import mesh
+    from src import approx
 elif __name__ == "plotting":
     import basis
     import mesh
+    import approx
 
 ## Uncomment this if you want to see figures
 #matplotlib.use('TkAgg')
@@ -250,3 +252,64 @@ class Test_plotMeshElementBoundaries( unittest.TestCase ):
     def test_plot_3_elems( self ):
         node_coords, ien_array = mesh.generateMesh( 0, 3, 3, 1 )
         plotMeshElementBoundaries( ien_array = ien_array, node_coords = node_coords, handles = [] )
+
+class Test_plotErrorConvergence( unittest.TestCase ):
+    def test_linear_h_convergence_sin( self ):
+        target_fun = lambda x : numpy.sin( numpy.pi * x )
+        n = numpy.array( range( 0, 10 ) )
+        num_elems = 1 * 2**n
+        domain = [ -1.0, 1.0 ]
+        degree = 1
+        eval_basis = basis.evalLagrangeBasis1D
+        error = []
+        for i in range( 0, len( num_elems ) ):
+            coeff, node_coords, ien_array = approx.computeSolution( target_fun = target_fun, domain = domain, num_elems = num_elems[i], degree = degree )
+            fit_error, residual = approx.computeFitError( target_fun = target_fun, coeff = coeff, node_coords = node_coords, ien_array = ien_array, eval_basis = basis.evalLagrangeBasis1D )
+            error.append( fit_error )
+        error_log10 = numpy.log10( error )
+        num_elems_log10 = numpy.log10( num_elems )
+        conv_rate = abs( ( error_log10[-1] - error_log10[0] ) / ( num_elems_log10[-1] - num_elems_log10[0] ) )
+        fig, ax = plt.subplots()
+        ax.loglog( num_elems, error, linewidth=2.0, color = [0, 0, 0] )
+        ax.grid( visible = True, which = "both" )
+        plt.show()
+    
+    def test_quadratic_h_convergence_sin( self ):
+        target_fun = lambda x : numpy.sin( numpy.pi * x )
+        n = numpy.array( range( 0, 10 ) )
+        num_elems = 1 * 2**n
+        domain = [ -1.0, 1.0 ]
+        degree = 1
+        eval_basis = basis.evalLagrangeBasis1D
+        error = []
+        for i in range( 0, len( num_elems ) ):
+            coeff, node_coords, ien_array = approx.computeSolution( target_fun = target_fun, domain = domain, num_elems = num_elems[i], degree = degree )
+            fit_error, residual = approx.computeFitError( target_fun = target_fun, coeff = coeff, node_coords = node_coords, ien_array = ien_array, eval_basis = basis.evalLagrangeBasis1D )
+            error.append( fit_error )
+        error_log10 = numpy.log10( error )
+        num_elems_log10 = numpy.log10( num_elems )
+        conv_rate = abs( ( error_log10[-1] - error_log10[0] ) / ( num_elems_log10[-1] - num_elems_log10[0] ) )
+        fig, ax = plt.subplots()
+        ax.loglog( num_elems, error, linewidth=2.0, color = [0, 0, 0] )
+        ax.grid( visible = True, which = "both" )
+        plt.show()
+        
+    def test_two_element_p_convergence_sin( self ):
+        target_fun = lambda x : numpy.sin( numpy.pi * x )
+        num_elems = 2
+        domain = [ -1.0, 1.0 ]
+        p = numpy.array( range( 0, 6 ) )
+        degree = 1 * 2**p
+        eval_basis = basis.evalLagrangeBasis1D
+        error = []
+        for i in range( 0, len( degree ) ):
+            coeff, node_coords, ien_array = approx.computeSolution( target_fun = target_fun, domain = domain, num_elems = num_elems, degree = degree[i] )
+            fit_error, residual = approx.computeFitError( target_fun = target_fun, coeff = coeff, node_coords = node_coords, ien_array = ien_array, eval_basis = basis.evalLagrangeBasis1D )
+            error.append( fit_error )
+        error_log10 = numpy.log10( error )
+        degree_log10 = numpy.log10( degree )
+        conv_rate = abs( ( error_log10[-1] - error_log10[0] ) / ( degree_log10[-1] - degree_log10[0] ) )
+        fig, ax = plt.subplots()
+        ax.loglog( degree, error, linewidth=2.0, color = [0, 0, 0] )
+        ax.grid( visible = True, which = "both" )
+        plt.show()
