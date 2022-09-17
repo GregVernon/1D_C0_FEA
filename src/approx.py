@@ -11,8 +11,8 @@ elif __name__ == "approx":
     import basis
     import mesh
 
-def computeSolution( target_fun, domain, num_elems, degree ):
-    node_coords, ien_array = mesh.generateMesh( domain[0], domain[1], num_elems, degree )
+def computeSolution( target_fun, domain, degree ):
+    node_coords, ien_array = mesh.generateMesh( domain[0], domain[1], degree )
     coeff = target_fun( node_coords )
     return coeff, node_coords, ien_array
 
@@ -29,7 +29,7 @@ def evaluateSolutionAt( x, coeff, node_coords, ien_array, eval_basis ):
     return y
 
 def computeFitError( target_fun, coeff, node_coords, ien_array, eval_basis ):
-    num_elems = ien_array.shape[0]
+    num_elems = len( ien_array )
     domain = [ min( node_coords ), max( node_coords ) ]
     abs_err_fun = lambda x : abs( target_fun( x ) - evaluateSolutionAt( x, coeff, node_coords, ien_array, eval_basis ) )
     fit_error, residual = scipy.integrate.quad( abs_err_fun, domain[0], domain[1], epsrel = 1e-12, limit = num_elems * 100 )
@@ -37,28 +37,28 @@ def computeFitError( target_fun, coeff, node_coords, ien_array, eval_basis ):
 
 class Test_evaluateSolutionAt( unittest.TestCase ):
     def test_single_linear_element( self ):
-        node_coords, ien_array = mesh.generateMesh( -1, 1, 1, 1 )
+        node_coords, ien_array = mesh.generateMesh( -1, 1, [ 1 ] )
         coeff = numpy.array( [-1.0, 1.0 ] )
         self.assertAlmostEqual( first = evaluateSolutionAt( x = -1.0, coeff = coeff, node_coords = node_coords, ien_array = ien_array, eval_basis = basis.evalLagrangeBasis1D ), second = -1.0 )
         self.assertAlmostEqual( first = evaluateSolutionAt( x =  0.0, coeff = coeff, node_coords = node_coords, ien_array = ien_array, eval_basis = basis.evalLagrangeBasis1D ), second =  0.0 )
         self.assertAlmostEqual( first = evaluateSolutionAt( x = +1.0, coeff = coeff, node_coords = node_coords, ien_array = ien_array, eval_basis = basis.evalLagrangeBasis1D ), second = +1.0 )
 
     def test_two_linear_elements( self ):
-        node_coords, ien_array = mesh.generateMesh( -1, 1, 2, 1 )
+        node_coords, ien_array = mesh.generateMesh( -1, 1, [ 1, 1 ] )
         coeff = numpy.array( [ 1.0, 0.0, 1.0 ] )
         self.assertAlmostEqual( first = evaluateSolutionAt( x = -1.0, coeff = coeff, node_coords = node_coords, ien_array = ien_array, eval_basis = basis.evalLagrangeBasis1D ), second = +1.0 )
         self.assertAlmostEqual( first = evaluateSolutionAt( x =  0.0, coeff = coeff, node_coords = node_coords, ien_array = ien_array, eval_basis = basis.evalLagrangeBasis1D ), second =  0.0 )
         self.assertAlmostEqual( first = evaluateSolutionAt( x = +1.0, coeff = coeff, node_coords = node_coords, ien_array = ien_array, eval_basis = basis.evalLagrangeBasis1D ), second = +1.0 )
 
     def test_single_quadratic_element( self ):
-        node_coords, ien_array = mesh.generateMesh( -1, 1, 1, 2 )
+        node_coords, ien_array = mesh.generateMesh( -1, 1, [ 2 ] )
         coeff = numpy.array( [+1.0, 0.0, 1.0 ] )
         self.assertAlmostEqual( first = evaluateSolutionAt( x = -1.0, coeff = coeff, node_coords = node_coords, ien_array = ien_array, eval_basis = basis.evalLagrangeBasis1D ), second = +1.0 )
         self.assertAlmostEqual( first = evaluateSolutionAt( x =  0.0, coeff = coeff, node_coords = node_coords, ien_array = ien_array, eval_basis = basis.evalLagrangeBasis1D ), second =  0.0 )
         self.assertAlmostEqual( first = evaluateSolutionAt( x = +1.0, coeff = coeff, node_coords = node_coords, ien_array = ien_array, eval_basis = basis.evalLagrangeBasis1D ), second = +1.0 )
 
     def test_two_quadratic_elements( self ):
-        node_coords, ien_array = mesh.generateMesh( -2, 2, 2, 2 )
+        node_coords, ien_array = mesh.generateMesh( -2, 2, [ 2, 2 ] )
         coeff = numpy.array( [ 1.0, 0.25, 0.5, 0.25, 1.0 ] )
         self.assertAlmostEqual( first = evaluateSolutionAt( x = -2.0, coeff = coeff, node_coords = node_coords, ien_array = ien_array, eval_basis = basis.evalLagrangeBasis1D ), second = +1.00 )
         self.assertAlmostEqual( first = evaluateSolutionAt( x = -1.0, coeff = coeff, node_coords = node_coords, ien_array = ien_array, eval_basis = basis.evalLagrangeBasis1D ), second = +0.25 )
@@ -69,29 +69,29 @@ class Test_evaluateSolutionAt( unittest.TestCase ):
 
 class Test_computeSolution( unittest.TestCase ):
     def test_single_linear_element_poly( self ):
-        test_solution, _, _ = computeSolution( target_fun = lambda x : x, domain = [-1.0, 1.0 ], num_elems = 1, degree = 1 )
+        test_solution, _, _ = computeSolution( target_fun = lambda x : x, domain = [-1.0, 1.0 ], degree = [ 1 ] )
         gold_solution = numpy.array( [ -1.0, 1.0 ] )
         self.assertTrue( numpy.allclose( test_solution, gold_solution ) )
     
     def test_single_quad_element_poly( self ):
-        test_solution, _, _ = computeSolution( target_fun = lambda x : x**2, domain = [-1.0, 1.0 ], num_elems = 1, degree = 2 )
+        test_solution, _, _ = computeSolution( target_fun = lambda x : x**2, domain = [-1.0, 1.0 ], degree = [ 2 ] )
         gold_solution = numpy.array( [ 1.0, 0.0, 1.0 ] )
         self.assertTrue( numpy.allclose( test_solution, gold_solution ) )
     
     def test_two_linear_element_poly( self ):
-        test_solution, _, _ = computeSolution( target_fun = lambda x : x**2, domain = [-1.0, 1.0 ], num_elems = 2, degree = 1 )
+        test_solution, _, _ = computeSolution( target_fun = lambda x : x**2, domain = [-1.0, 1.0 ], degree = [ 1, 1 ] )
         gold_solution = numpy.array( [ 1.0, 0.0, 1.0 ] )
         self.assertTrue( numpy.allclose( test_solution, gold_solution ) )
     
     def test_four_quad_element_poly( self ):
-        test_solution, _, _ = computeSolution( target_fun = lambda x : x**2, domain = [-1.0, 1.0 ], num_elems = 4, degree = 1 )
+        test_solution, _, _ = computeSolution( target_fun = lambda x : x**2, domain = [-1.0, 1.0 ], degree = [ 1, 1, 1, 1 ] )
         gold_solution = numpy.array( [ 1.0, 0.25, 0.0, 0.25, 1.0 ] )
         self.assertTrue( numpy.allclose( test_solution, gold_solution ) )
 
 class Test_computeFitError( unittest.TestCase ):
     def test_single_element_quad_poly( self ):
         target_fun = lambda x : x**2
-        coeff, node_coords, ien_array = computeSolution( target_fun = target_fun, domain = [ 0.0, 1.0 ], num_elems = 1, degree = 1 )
+        coeff, node_coords, ien_array = computeSolution( target_fun = target_fun, domain = [ 0.0, 1.0 ], degree = [ 1 ] )
         fit_error, residual = computeFitError( target_fun = target_fun, coeff = coeff, node_coords = node_coords, ien_array = ien_array, eval_basis = basis.evalLagrangeBasis1D )
         self.assertAlmostEqual( first = fit_error, second = 1.0 / 6.0 )
     
@@ -104,7 +104,8 @@ class Test_computeFitError( unittest.TestCase ):
         eval_basis = basis.evalLagrangeBasis1D
         error = []
         for i in range( 0, len( num_elems ) ):
-            coeff, node_coords, ien_array = computeSolution( target_fun = target_fun, domain = domain, num_elems = num_elems[i], degree = degree )
+            degree_list = [ degree ] * num_elems[i]
+            coeff, node_coords, ien_array = computeSolution( target_fun = target_fun, domain = domain, degree = degree_list )
             fit_error, residual = computeFitError( target_fun = target_fun, coeff = coeff, node_coords = node_coords, ien_array = ien_array, eval_basis = basis.evalLagrangeBasis1D )
             error.append( fit_error )
         error_log10 = numpy.log10( error )
@@ -121,7 +122,8 @@ class Test_computeFitError( unittest.TestCase ):
         eval_basis = basis.evalLagrangeBasis1D
         error = []
         for i in range( 0, len( num_elems ) ):
-            coeff, node_coords, ien_array = computeSolution( target_fun = target_fun, domain = domain, num_elems = num_elems[i], degree = degree )
+            degree_list = [ degree ] * num_elems[i]
+            coeff, node_coords, ien_array = computeSolution( target_fun = target_fun, domain = domain, degree = degree_list )
             fit_error, residual = computeFitError( target_fun = target_fun, coeff = coeff, node_coords = node_coords, ien_array = ien_array, eval_basis = basis.evalLagrangeBasis1D )
             error.append( fit_error )
         error_log10 = numpy.log10( error )
@@ -138,7 +140,8 @@ class Test_computeFitError( unittest.TestCase ):
         eval_basis = basis.evalLagrangeBasis1D
         error = []
         for i in range( 0, len( num_elems ) ):
-            coeff, node_coords, ien_array = computeSolution( target_fun = target_fun, domain = domain, num_elems = num_elems[i], degree = degree )
+            degree_list = [ degree ] * num_elems[i]
+            coeff, node_coords, ien_array = computeSolution( target_fun = target_fun, domain = domain, degree = degree_list )
             fit_error, residual = computeFitError( target_fun = target_fun, coeff = coeff, node_coords = node_coords, ien_array = ien_array, eval_basis = basis.evalLagrangeBasis1D )
             error.append( fit_error )
         error_log10 = numpy.log10( error )
@@ -155,7 +158,8 @@ class Test_computeFitError( unittest.TestCase ):
         eval_basis = basis.evalLagrangeBasis1D
         error = []
         for i in range( 0, len( num_elems ) ):
-            coeff, node_coords, ien_array = computeSolution( target_fun = target_fun, domain = domain, num_elems = num_elems[i], degree = degree )
+            degree_list = [ degree ] * num_elems[i]
+            coeff, node_coords, ien_array = computeSolution( target_fun = target_fun, domain = domain, degree = degree_list )
             fit_error, residual = computeFitError( target_fun = target_fun, coeff = coeff, node_coords = node_coords, ien_array = ien_array, eval_basis = basis.evalLagrangeBasis1D )
             error.append( fit_error )
         error_log10 = numpy.log10( error )
@@ -172,7 +176,8 @@ class Test_computeFitError( unittest.TestCase ):
         eval_basis = basis.evalLagrangeBasis1D
         error = []
         for i in range( 0, len( num_elems ) ):
-            coeff, node_coords, ien_array = computeSolution( target_fun = target_fun, domain = domain, num_elems = num_elems[i], degree = degree )
+            degree_list = [ degree ] * num_elems[i]
+            coeff, node_coords, ien_array = computeSolution( target_fun = target_fun, domain = domain, degree = degree_list )
             fit_error, residual = computeFitError( target_fun = target_fun, coeff = coeff, node_coords = node_coords, ien_array = ien_array, eval_basis = basis.evalLagrangeBasis1D )
             error.append( fit_error )
         error_log10 = numpy.log10( error )
@@ -189,7 +194,8 @@ class Test_computeFitError( unittest.TestCase ):
         eval_basis = basis.evalLagrangeBasis1D
         error = []
         for i in range( 0, len( num_elems ) ):
-            coeff, node_coords, ien_array = computeSolution( target_fun = target_fun, domain = domain, num_elems = num_elems[i], degree = degree )
+            degree_list = [ degree ] * num_elems[i]
+            coeff, node_coords, ien_array = computeSolution( target_fun = target_fun, domain = domain, degree = degree_list )
             fit_error, residual = computeFitError( target_fun = target_fun, coeff = coeff, node_coords = node_coords, ien_array = ien_array, eval_basis = basis.evalLagrangeBasis1D )
             error.append( fit_error )
         error_log10 = numpy.log10( error )
@@ -206,7 +212,8 @@ class Test_computeFitError( unittest.TestCase ):
         eval_basis = basis.evalLagrangeBasis1D
         error = []
         for i in range( 0, len( num_elems ) ):
-            coeff, node_coords, ien_array = computeSolution( target_fun = target_fun, domain = domain, num_elems = num_elems[i], degree = degree )
+            degree_list = [ degree ] * num_elems[i]
+            coeff, node_coords, ien_array = computeSolution( target_fun = target_fun, domain = domain, degree = degree_list )
             fit_error, residual = computeFitError( target_fun = target_fun, coeff = coeff, node_coords = node_coords, ien_array = ien_array, eval_basis = basis.evalLagrangeBasis1D )
             error.append( fit_error )
         error_log10 = numpy.log10( error )
@@ -223,7 +230,8 @@ class Test_computeFitError( unittest.TestCase ):
         eval_basis = basis.evalLagrangeBasis1D
         error = []
         for i in range( 0, len( num_elems ) ):
-            coeff, node_coords, ien_array = computeSolution( target_fun = target_fun, domain = domain, num_elems = num_elems[i], degree = degree )
+            degree_list = [ degree ] * num_elems[i]
+            coeff, node_coords, ien_array = computeSolution( target_fun = target_fun, domain = domain, degree = degree_list )
             fit_error, residual = computeFitError( target_fun = target_fun, coeff = coeff, node_coords = node_coords, ien_array = ien_array, eval_basis = basis.evalLagrangeBasis1D )
             error.append( fit_error )
         error_log10 = numpy.log10( error )
