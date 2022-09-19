@@ -45,6 +45,12 @@ def getElementIdxContainingPoint( node_coords, ien_array, point ):
             return e
     raise Exception( "ELEMENT_CONTAINING_POINT_NOT_FOUND" )
 
+def getDegreeListFromIENArray( ien_array ):
+    degree = []
+    for elem in ien_array:
+        degree.append( len( ien_array[elem] ) )
+    return degree
+
 class Test_getElementIdxContainingPoint( unittest.TestCase ):
     def test_single_element( self ):
         node_coords, ien_array = generateMesh( xmin = 0.0, xmax = 1.0, degree = [ 1 ] )

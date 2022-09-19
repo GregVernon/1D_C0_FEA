@@ -15,7 +15,7 @@ elif __name__ == "plotting":
     import approx
 
 ## Uncomment this if you want to see figures
-#matplotlib.use('TkAgg')
+matplotlib.use('TkAgg')
 
 def plotPiecewiseFunctionFit( ien_array, node_coords, coeff, eval_basis, options ):
     fig, ax = plt.subplots()
@@ -202,27 +202,37 @@ class Test_plotPiecwiseFunctionFit( unittest.TestCase ):
 
 class Test_plotBasisMesh( unittest.TestCase ):
     def test_3_linear_lagrange( self ):
-        node_coords, ien_array = mesh.generateMesh( 0, 4, [ 1, 1, 1 ] )
+        node_coords, ien_array = mesh.generateMesh( 0, 3, [ 1, 1, 1 ] )
         coeff = numpy.ones( shape = node_coords.shape[0] )
         plotMeshBasis( ien_array = ien_array, node_coords = node_coords, coeff = coeff, eval_basis = basis.evalLagrangeBasis1D, handles = [], color_by = "GLOBAL_ID" )
 
     def test_3_quadratic_lagrange( self ):
-        node_coords, ien_array = mesh.generateMesh( 0, 4, [ 2, 2, 2 ] )
+        node_coords, ien_array = mesh.generateMesh( 0, 3, [ 2, 2, 2 ] )
         coeff = numpy.ones( shape = node_coords.shape[0] )
         plotMeshBasis( ien_array = ien_array, node_coords = node_coords, coeff = coeff, eval_basis = basis.evalLagrangeBasis1D, handles = [], color_by = "GLOBAL_ID" )
 
     def test_3_quadratic_bernstein( self ):
-        node_coords, ien_array = mesh.generateMesh( 0, 4, [ 2, 2, 2 ] )
+        node_coords, ien_array = mesh.generateMesh( 0, 3, [ 2, 2, 2 ] )
+        coeff = numpy.ones( shape = node_coords.shape[0] )
+        plotMeshBasis( ien_array = ien_array, node_coords = node_coords, coeff = coeff, eval_basis = basis.evalBernsteinBasis1D, handles = [], color_by = "GLOBAL_ID" )
+
+    def test_4_p_refine_lagrange( self ):
+        node_coords, ien_array = mesh.generateMesh( 0, 4, [ 1, 2, 3, 4 ] )
+        coeff = numpy.ones( shape = node_coords.shape[0] )
+        plotMeshBasis( ien_array = ien_array, node_coords = node_coords, coeff = coeff, eval_basis = basis.evalLagrangeBasis1D, handles = [], color_by = "GLOBAL_ID" )
+
+    def test_4_p_refine_bernstein( self ):
+        node_coords, ien_array = mesh.generateMesh( 0, 4, [ 1, 2, 3, 4 ] )
         coeff = numpy.ones( shape = node_coords.shape[0] )
         plotMeshBasis( ien_array = ien_array, node_coords = node_coords, coeff = coeff, eval_basis = basis.evalBernsteinBasis1D, handles = [], color_by = "GLOBAL_ID" )
 
     def test_10_linear_lagrange( self ):
-        node_coords, ien_array = mesh.generateMesh( 0, 11, [ 1 ]*10 )
+        node_coords, ien_array = mesh.generateMesh( 0, 10, [ 1 ]*10 )
         coeff = numpy.ones( shape = node_coords.shape[0] )
         plotMeshBasis( ien_array = ien_array, node_coords = node_coords, coeff = coeff, eval_basis = basis.evalLagrangeBasis1D, handles = [], color_by = "GLOBAL_ID" )
 
     def test_10_quadratic_lagrange( self ):
-        node_coords, ien_array = mesh.generateMesh( 0, 11, [ 2 ]*10 )
+        node_coords, ien_array = mesh.generateMesh( 0, 10, [ 2 ]*10 )
         coeff = numpy.ones( shape = node_coords.shape[0] )
         plotMeshBasis( ien_array = ien_array, node_coords = node_coords, coeff = coeff, eval_basis = basis.evalLagrangeBasis1D, handles = [], color_by = "GLOBAL_ID" )
     
@@ -239,6 +249,11 @@ class Test_plotBasisMesh( unittest.TestCase ):
 class Test_plotPiecewiseApproximation( unittest.TestCase ):
     def test_approx_erfc_10_quadratic_lagrange( self ):
         node_coords, ien_array = mesh.generateMesh( -2, 2, [ 2, 2 ] )
+        coeff = scipy.special.erfc( node_coords )
+        plotPiecewiseApproximation( ien_array = ien_array, node_coords = node_coords, coeff = coeff, eval_basis = basis.evalLagrangeBasis1D, handles = [], color_by = "ELEMENT_ID" )
+
+    def test_approx_erfc_5_p_refine_lagrange( self ):
+        node_coords, ien_array = mesh.generateMesh( -2, 2, [ 2, 1, 2 ] )
         coeff = scipy.special.erfc( node_coords )
         plotPiecewiseApproximation( ien_array = ien_array, node_coords = node_coords, coeff = coeff, eval_basis = basis.evalLagrangeBasis1D, handles = [], color_by = "ELEMENT_ID" )
 
@@ -316,3 +331,4 @@ class Test_plotErrorConvergence( unittest.TestCase ):
         ax.loglog( degree, error, linewidth=2.0, color = [0, 0, 0] )
         ax.grid( visible = True, which = "both" )
         plt.show()
+    

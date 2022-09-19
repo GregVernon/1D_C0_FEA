@@ -16,6 +16,27 @@ def computeSolution( target_fun, domain, degree ):
     coeff = target_fun( node_coords )
     return coeff, node_coords, ien_array
 
+def computeSolutionDegreeRefine( target_fun, domain, num_elems, target_error ):
+    degree = [ 1 ] * num_elems
+    is_converged = False
+    while is_converged == False:
+        coeff, node_coords, ien_array = computeSolution( target_fun, domain, degree )
+        degree, fit_error = solutionBasedDegreeRefine( target_fun, coeff, node_coords, ien_array, basis.evalLagrangeBasis1D, target_error )
+        if numpy.all( fit_error <= target_error ):
+            is_converged = True
+    return coeff, node_coords, ien_array
+
+def solutionBasedDegreeRefine( target_fun, coeff, node_coords, ien_array, eval_basis, target_error ):
+    num_elems = len( ien_array )
+    fit_error = numpy.zeros( num_elems )
+    degree = numpy.zeros( num_elems, dtype = "int" )
+    for e in range( 0, num_elems ):
+        degree[e] = len( ien_array[e] ) - 1
+        fit_error[e], _ = computeElementFitError( target_fun, coeff, node_coords, ien_array, e, eval_basis )
+    refine_elem_idx = numpy.argwhere( fit_error > target_error ).squeeze()
+    degree[refine_elem_idx] += 1
+    return degree, fit_error
+
 def evaluateSolutionAt( x, coeff, node_coords, ien_array, eval_basis ):
     elem_idx = mesh.getElementIdxContainingPoint( node_coords, ien_array, x )
     elem_nodes = ien_array[elem_idx]
@@ -27,6 +48,13 @@ def evaluateSolutionAt( x, coeff, node_coords, ien_array, eval_basis ):
         curr_node = elem_nodes[n]
         y += coeff[curr_node] * eval_basis( degree = degree, basis_idx = n, variate = xi )
     return y
+
+def computeElementFitError( target_fun, coeff, node_coords, ien_array, elem_idx, eval_basis ):
+    elem_nodes = ien_array[elem_idx]
+    domain = [ node_coords[elem_nodes[0]], node_coords[elem_nodes[-1]] ]
+    abs_err_fun = lambda x : abs( target_fun( x ) - evaluateSolutionAt( x, coeff, node_coords, ien_array, eval_basis ) )
+    fit_error, residual = scipy.integrate.quad( abs_err_fun, domain[0], domain[1], epsrel = 1e-12, limit = 100 )
+    return fit_error, residual
 
 def computeFitError( target_fun, coeff, node_coords, ien_array, eval_basis ):
     num_elems = len( ien_array )
@@ -87,6 +115,43 @@ class Test_computeSolution( unittest.TestCase ):
         test_solution, _, _ = computeSolution( target_fun = lambda x : x**2, domain = [-1.0, 1.0 ], degree = [ 1, 1, 1, 1 ] )
         gold_solution = numpy.array( [ 1.0, 0.25, 0.0, 0.25, 1.0 ] )
         self.assertTrue( numpy.allclose( test_solution, gold_solution ) )
+
+class Test_computeSolutionDegreeRefine( unittest.TestCase ):
+    def test_single_element_sin( self ):
+        target_fun = lambda x : numpy.sin( numpy.pi * x )
+        domain = [ -1, 1 ]
+        coeff, node_coords, ien_array = computeSolutionDegreeRefine( target_fun = target_fun, domain = domain, num_elems = 1, target_error = 1e-4 )
+        print( mesh.getDegreeListFromIENArray( ien_array ) )
+
+    def test_single_element_exp( self ):
+        target_fun = lambda x : numpy.exp( x )
+        domain = [ -1, 1 ]
+        coeff, node_coords, ien_array = computeSolutionDegreeRefine( target_fun = target_fun, domain = domain, num_elems = 1, target_error = 1e-4 )
+        print( mesh.getDegreeListFromIENArray( ien_array ) )
+    
+    def test_single_element_erfc( self ):
+        target_fun = lambda x : scipy.special.erfc( x )
+        domain = [ -2, 2 ]
+        coeff, node_coords, ien_array = computeSolutionDegreeRefine( target_fun = target_fun, domain = domain, num_elems = 1, target_error = 1e-8 )
+        print( mesh.getDegreeListFromIENArray( ien_array ) )
+    
+    def test_four_element_sin( self ):
+        target_fun = lambda x : numpy.sin( numpy.pi * x )
+        domain = [ -1, 1 ]
+        coeff, node_coords, ien_array = computeSolutionDegreeRefine( target_fun = target_fun, domain = domain, num_elems = 4, target_error = 1e-4 )
+        print( mesh.getDegreeListFromIENArray( ien_array ) )
+
+    def test_four_element_exp( self ):
+        target_fun = lambda x : numpy.exp( x )
+        domain = [ -1, 1 ]
+        coeff, node_coords, ien_array = computeSolutionDegreeRefine( target_fun = target_fun, domain = domain, num_elems = 4, target_error = 1e-4 )
+        print( mesh.getDegreeListFromIENArray( ien_array ) )
+    
+    def test_four_element_erfc( self ):
+        target_fun = lambda x : scipy.special.erfc( x )
+        domain = [ -2, 2 ]
+        coeff, node_coords, ien_array = computeSolutionDegreeRefine( target_fun = target_fun, domain = domain, num_elems = 4, target_error = 1e-8 )
+        print( mesh.getDegreeListFromIENArray( ien_array ) )
 
 class Test_computeFitError( unittest.TestCase ):
     def test_single_element_quad_poly( self ):
