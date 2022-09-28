@@ -27,36 +27,31 @@ def evalLagrangeBasis1D( degree, basis_idx, variate ):
     return basis_val
 
 def evalBernsteinBasis1D( degree, basis_idx, variate ):
-    if ( variate < -1.0 ) or ( variate > +1.0 ):
+    if ( variate < 0.0 ) or ( variate > +1.0 ):
         raise Exception( "NOT_IN_DOMAIN" )
-    param_variate = (1/2) * ( variate + 1.0 )
     term_1 = math.comb( degree, basis_idx )
-    term_2 = param_variate ** basis_idx
-    term_3 = ( 1.0 - param_variate ) ** ( degree - basis_idx )
+    term_2 = variate ** basis_idx
+    term_3 = ( 1.0 - variate ) ** ( degree - basis_idx )
     basis_val = term_1 * term_2 * term_3
     return basis_val
 
 def evalBernsteinBasisDeriv( degree, basis_idx, deriv, variate ):
-    if ( variate < -1.0 ) or ( variate > +1.0 ):
+    if ( variate < 0.0 ) or ( variate > +1.0 ):
         raise Exception( "NOT_IN_DOMAIN" )
     if deriv > 0:
         if basis_idx == 0:
             term_1 = evalBernsteinBasisDeriv( degree = degree - 1, basis_idx = basis_idx - 1, deriv = deriv - 1, variate = variate )
             term_2 = evalBernsteinBasisDeriv( degree = degree - 1, basis_idx = basis_idx, deriv = deriv - 1, variate = variate )
-            basis_val = (1/2) * degree * ( term_1 - term_2 )
+            basis_val = degree * ( term_1 - term_2 )
         else:
             term_1 = evalBernsteinBasisDeriv( degree = degree - 1, basis_idx = basis_idx - 1, deriv = deriv - 1, variate = variate )
             term_2 = evalBernsteinBasisDeriv( degree = degree - 1, basis_idx = basis_idx, deriv = deriv - 1, variate = variate )
-            basis_val = (1/2) * degree * ( term_1 - term_2 )
+            basis_val = degree * ( term_1 - term_2 )
     else:
         if ( basis_idx < 0 ) or ( basis_idx > degree ):
             basis_val = 0.0
         else:
-            param_variate = (1/2) * ( variate + 1.0 )
-            term_1 = math.comb( degree, basis_idx )
-            term_2 = param_variate ** basis_idx
-            term_3 = ( 1.0 - param_variate ) ** ( degree - basis_idx )
-            basis_val = term_1 * term_2 * term_3
+            basis_val = evalBernsteinBasis1D( degree, basis_idx, variate )
     return basis_val
 
 def evalLegendreBasis1D( degree, variate ):
@@ -153,7 +148,7 @@ class Test_evalMonomialBasis1D( unittest.TestCase ):
 class Test_evalBernsteinBasisDeriv( unittest.TestCase ):
     def test_outside_domain( self ):
         with self.assertRaises( Exception ) as context:
-            evalBernsteinBasisDeriv( degree = 1, basis_idx = 0, deriv = 0, variate = -1.5 )
+            evalBernsteinBasisDeriv( degree = 1, basis_idx = 0, deriv = 0, variate = -0.5 )
         self.assertEqual( "NOT_IN_DOMAIN", str( context.exception ) )
     
         with self.assertRaises( Exception ) as context:
@@ -161,40 +156,41 @@ class Test_evalBernsteinBasisDeriv( unittest.TestCase ):
         self.assertEqual( "NOT_IN_DOMAIN", str( context.exception ) )
     
     def test_constant_at_nodes( self ):
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 0, basis_idx = 0, deriv = 0, variate = -1.0 ), second = 1.0, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 0, basis_idx = 0, deriv = 0, variate = +1.0 ), second = 1.0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 0, basis_idx = 0, deriv = 0, variate = 0.0 ), second = 1.0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 0, basis_idx = 0, deriv = 0, variate = 1.0 ), second = 1.0, delta = 1e-12 )
     
     def test_constant_1st_deriv_at_nodes( self ):
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 0, basis_idx = 0, deriv = 1, variate = -1.0 ), second = 0.0, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 0, basis_idx = 0, deriv = 1, variate = +1.0 ), second = 0.0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 0, basis_idx = 0, deriv = 1, variate = 0.0 ), second = 0.0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 0, basis_idx = 0, deriv = 1, variate = 1.0 ), second = 0.0, delta = 1e-12 )
 
     def test_constant_2nd_deriv_at_nodes( self ):
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 0, basis_idx = 0, deriv = 2, variate = -1.0 ), second = 0.0, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 0, basis_idx = 0, deriv = 2, variate = +1.0 ), second = 0.0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 0, basis_idx = 0, deriv = 2, variate = 0.0 ), second = 0.0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 0, basis_idx = 0, deriv = 2, variate = 1.0 ), second = 0.0, delta = 1e-12 )
 
     def test_linear_at_nodes( self ):
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 1, basis_idx = 0, deriv = 0, variate = -1.0 ), second = 1.0, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 1, basis_idx = 0, deriv = 0, variate = +1.0 ), second = 0.0, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 1, basis_idx = 1, deriv = 0, variate = -1.0 ), second = 0.0, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 1, basis_idx = 1, deriv = 0, variate = +1.0 ), second = 1.0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 1, basis_idx = 0, deriv = 0, variate = 0.0 ), second = 1.0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 1, basis_idx = 0, deriv = 0, variate = 1.0 ), second = 0.0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 1, basis_idx = 1, deriv = 0, variate = 0.0 ), second = 0.0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 1, basis_idx = 1, deriv = 0, variate = 1.0 ), second = 1.0, delta = 1e-12 )
     
     def test_linear_at_gauss_pts( self ):
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 1, basis_idx = 0, deriv = 0, variate =  0.0 ), second = 0.5, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 1, basis_idx = 1, deriv = 0, variate =  0.0 ), second = 0.5, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 1, basis_idx = 0, deriv = 0, variate =  0.5 ), second = 0.5, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 1, basis_idx = 1, deriv = 0, variate =  0.5 ), second = 0.5, delta = 1e-12 )
     
     def test_quadratic_at_nodes( self ):
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 0, deriv = 0, variate = -1.0 ), second = 1.00, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 0, deriv = 0, variate =  0.0 ), second = 0.25, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 0, deriv = 0, variate = +1.0 ), second = 0.00, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 1, deriv = 0, variate = -1.0 ), second = 0.00, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 1, deriv = 0, variate =  0.0 ), second = 0.50, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 1, deriv = 0, variate = +1.0 ), second = 0.00, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 2, deriv = 0, variate = -1.0 ), second = 0.00, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 2, deriv = 0, variate =  0.0 ), second = 0.25, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 2, deriv = 0, variate = +1.0 ), second = 1.00, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 0, deriv = 0, variate = 0.0 ), second = 1.00, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 0, deriv = 0, variate = 0.5 ), second = 0.25, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 0, deriv = 0, variate = 1.0 ), second = 0.00, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 1, deriv = 0, variate = 0.0 ), second = 0.00, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 1, deriv = 0, variate = 0.5 ), second = 0.50, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 1, deriv = 0, variate = 1.0 ), second = 0.00, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 2, deriv = 0, variate = 0.0 ), second = 0.00, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 2, deriv = 0, variate = 0.5 ), second = 0.25, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 2, deriv = 0, variate = 1.0 ), second = 1.00, delta = 1e-12 )
     
     def test_quadratic_at_gauss_pts( self ):
         x = [ -1.0 / math.sqrt(3.0) , 1.0 / math.sqrt(3.0) ]
+        x = [ affine_mapping_1D( [-1, 1], [0, 1], xi ) for xi in x ]
         self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 0, deriv = 0, variate = x[0] ), second = 0.62200846792814620, delta = 1e-12 )
         self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 0, deriv = 0, variate = x[1] ), second = 0.04465819873852045, delta = 1e-12 )
         self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 1, deriv = 0, variate = x[0] ), second = 0.33333333333333333, delta = 1e-12 )
@@ -203,64 +199,66 @@ class Test_evalBernsteinBasisDeriv( unittest.TestCase ):
         self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 2, deriv = 0, variate = x[1] ), second = 0.62200846792814620, delta = 1e-12 )
     
     def test_linear_1st_deriv_at_nodes( self ):
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 1, basis_idx = 0, deriv = 1, variate = -1.0 ), second = -1/2, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 1, basis_idx = 0, deriv = 1, variate = +1.0 ), second = -1/2, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 1, basis_idx = 1, deriv = 1, variate = -1.0 ), second = +1/2, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 1, basis_idx = 1, deriv = 1, variate = +1.0 ), second = +1/2, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 1, basis_idx = 0, deriv = 1, variate = 0.0 ), second = -1.0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 1, basis_idx = 0, deriv = 1, variate = 1.0 ), second = -1.0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 1, basis_idx = 1, deriv = 1, variate = 0.0 ), second = +1.0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 1, basis_idx = 1, deriv = 1, variate = 1.0 ), second = +1.0, delta = 1e-12 )
     
     def test_linear_1st_deriv_at_gauss_pts( self ):
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 1, basis_idx = 0, deriv = 1, variate = 0.0 ), second = -1/2, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 1, basis_idx = 1, deriv = 1, variate = 0.0 ), second = +1/2, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 1, basis_idx = 0, deriv = 1, variate = 0.5 ), second = -1.0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 1, basis_idx = 1, deriv = 1, variate = 0.5 ), second = +1.0, delta = 1e-12 )
     
     def test_linear_2nd_deriv_at_nodes( self ):
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 1, basis_idx = 0, deriv = 2, variate = -1.0 ), second = 0, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 1, basis_idx = 0, deriv = 2, variate = +1.0 ), second = 0, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 1, basis_idx = 1, deriv = 2, variate = -1.0 ), second = 0, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 1, basis_idx = 1, deriv = 2, variate = +1.0 ), second = 0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 1, basis_idx = 0, deriv = 2, variate = 0.0 ), second = 0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 1, basis_idx = 0, deriv = 2, variate = 1.0 ), second = 0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 1, basis_idx = 1, deriv = 2, variate = 0.0 ), second = 0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 1, basis_idx = 1, deriv = 2, variate = 1.0 ), second = 0, delta = 1e-12 )
     
     def test_linear_2nd_deriv_at_gauss_pts( self ):
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 1, basis_idx = 0, deriv = 2, variate = 0.0 ), second = 0, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 1, basis_idx = 1, deriv = 2, variate = 0.0 ), second = 0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 1, basis_idx = 0, deriv = 2, variate = 0.5 ), second = 0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 1, basis_idx = 1, deriv = 2, variate = 0.5 ), second = 0, delta = 1e-12 )
 
     def test_quadratic_1st_deriv_at_nodes( self ):
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 0, deriv = 1, variate = -1.0 ), second = -1.00, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 0, deriv = 1, variate =  0.0 ), second = -0.50, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 0, deriv = 1, variate = +1.0 ), second =  0.00, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 1, deriv = 1, variate = -1.0 ), second = +1.00, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 1, deriv = 1, variate =  0.0 ), second =  0.00, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 1, deriv = 1, variate = +1.0 ), second = -1.00, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 2, deriv = 1, variate = -1.0 ), second =  0.00, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 2, deriv = 1, variate =  0.0 ), second =  0.50, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 2, deriv = 1, variate = +1.0 ), second = +1.00, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 0, deriv = 1, variate = 0.0 ), second = -2.0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 0, deriv = 1, variate = 0.5 ), second = -1.0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 0, deriv = 1, variate = 1.0 ), second =  0.0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 1, deriv = 1, variate = 0.0 ), second = +2.0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 1, deriv = 1, variate = 0.5 ), second =  0.0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 1, deriv = 1, variate = 1.0 ), second = -2.0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 2, deriv = 1, variate = 0.0 ), second =  0.0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 2, deriv = 1, variate = 0.5 ), second =  1.0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 2, deriv = 1, variate = 1.0 ), second = +2.0, delta = 1e-12 )
     
     def test_quadratic_1st_deriv_at_gauss_pts( self ):
         x = [ -1.0 / math.sqrt(3.0) , 1.0 / math.sqrt(3.0) ]
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 0, deriv = 1, variate = x[0] ), second = -1/2 - 1/( 2*math.sqrt(3) ), delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 0, deriv = 1, variate = x[1] ), second = -1/2 + 1/( 2*math.sqrt(3) ), delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 1, deriv = 1, variate = x[0] ), second = +1 / math.sqrt(3), delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 1, deriv = 1, variate = x[1] ), second = -1 / math.sqrt(3), delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 2, deriv = 1, variate = x[0] ), second = +1/2 - 1/( 2*math.sqrt(3) ), delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 2, deriv = 1, variate = x[1] ), second = +1/2 + 1/( 2*math.sqrt(3) ), delta = 1e-12 )
+        x = [ affine_mapping_1D( [-1, 1], [0, 1], xi ) for xi in x ]
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 0, deriv = 1, variate = x[0] ), second = -1.0 - 1/( math.sqrt(3) ), delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 0, deriv = 1, variate = x[1] ), second = -1.0 + 1/( math.sqrt(3) ), delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 1, deriv = 1, variate = x[0] ), second = +2.0 / math.sqrt(3), delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 1, deriv = 1, variate = x[1] ), second = -2.0 / math.sqrt(3), delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 2, deriv = 1, variate = x[0] ), second = +1.0 - 1/( math.sqrt(3) ), delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 2, deriv = 1, variate = x[1] ), second = +1.0 + 1/( math.sqrt(3) ), delta = 1e-12 )
 
     def test_quadratic_2nd_deriv_at_nodes( self ):
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 0, deriv = 1, variate = -1.0 ), second = -1.00, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 0, deriv = 1, variate =  0.0 ), second = -0.50, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 0, deriv = 1, variate = +1.0 ), second =  0.00, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 1, deriv = 1, variate = -1.0 ), second = +1.00, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 1, deriv = 1, variate =  0.0 ), second =  0.00, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 1, deriv = 1, variate = +1.0 ), second = -1.00, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 2, deriv = 1, variate = -1.0 ), second =  0.00, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 2, deriv = 1, variate =  0.0 ), second =  0.50, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 2, deriv = 1, variate = +1.0 ), second = +1.00, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 0, deriv = 1, variate = 0.0 ), second = -2.0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 0, deriv = 1, variate = 0.5 ), second = -1.0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 0, deriv = 1, variate = 1.0 ), second =  0.0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 1, deriv = 1, variate = 0.0 ), second = +2.0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 1, deriv = 1, variate = 0.5 ), second =  0.0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 1, deriv = 1, variate = 1.0 ), second = -2.0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 2, deriv = 1, variate = 0.0 ), second =  0.0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 2, deriv = 1, variate = 0.5 ), second =  1.0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 2, deriv = 1, variate = 1.0 ), second = +2.0, delta = 1e-12 )
     
     def test_quadratic_2nd_deriv_at_gauss_pts( self ):
         x = [ -1.0 / math.sqrt(3.0) , 1.0 / math.sqrt(3.0) ]
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 0, deriv = 2, variate = x[0] ), second = +0.5, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 0, deriv = 2, variate = x[1] ), second = +0.5, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 1, deriv = 2, variate = x[0] ), second = -1.0, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 1, deriv = 2, variate = x[1] ), second = -1.0, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 2, deriv = 2, variate = x[0] ), second = +0.5, delta = 1e-12 )
-        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 2, deriv = 2, variate = x[1] ), second = +0.5, delta = 1e-12 )
+        x = [ affine_mapping_1D( [-1, 1], [0, 1], xi ) for xi in x ]
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 0, deriv = 2, variate = x[0] ), second = +2.0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 0, deriv = 2, variate = x[1] ), second = +2.0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 1, deriv = 2, variate = x[0] ), second = -4.0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 1, deriv = 2, variate = x[1] ), second = -4.0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 2, deriv = 2, variate = x[0] ), second = +2.0, delta = 1e-12 )
+        self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 2, deriv = 2, variate = x[1] ), second = +2.0, delta = 1e-12 )
 
 class Test_evalLegendreBasis1D( unittest.TestCase ):
     def test_basisAtBounds( self ):
