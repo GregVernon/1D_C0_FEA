@@ -67,7 +67,10 @@ def plotPiecewiseApproximation( ien_array, node_coords, coeff, eval_basis, handl
         x = numpy.zeros( len( xi ) )
         y = numpy.zeros( len( xi ) )
         for i in range( 0, len( xi ) ):
-            x[i] = mesh.paramToRefCoords( xi[i], elem_domain )
+            if ( eval_basis.__name__ == "evalBernsteinBasis1D"):
+                x[i] = basis.affine_mapping_1D( domain = [-1.0, 1.0], target_domain = [0.0, 1.0], x = xi[i] )
+            else:
+                x[i] = mesh.paramToRefCoords( xi[i], elem_domain )
             for n in range( 0, len( elem_nodes ) ):
                 curr_node = elem_nodes[n]
                 y[i] += coeff[curr_node] * eval_basis( degree = degree, basis_idx = n, variate = xi[i] )            
@@ -100,7 +103,10 @@ def plotMeshBasis( ien_array, node_coords, coeff, eval_basis, handles, color_by 
             curr_node = elem_nodes[n]
             for i in range( 0, len( xi ) ):
                 x[i] = mesh.paramToRefCoords( xi[i], elem_domain )
-                y[i] = coeff[curr_node] * eval_basis( degree = degree, basis_idx = n, variate = xi[i] )
+                if ( eval_basis.__name__ == "evalBernsteinBasis1D"):
+                    y[i] = coeff[curr_node] * eval_basis( degree = degree, basis_idx = n, variate = basis.affine_mapping_1D( domain = [-1.0, 1.0], target_domain = [0.0, 1.0], x = xi[i] ) )
+                else:
+                    y[i] = coeff[curr_node] * eval_basis( degree = degree, basis_idx = n, variate = xi[i] )
             if ( color_by == "GLOBAL_ID" ):
                 color_idx = curr_node % len( colors )
             elif ( color_by == "ELEMENT_ID" ):
