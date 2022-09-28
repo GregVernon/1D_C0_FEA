@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import unittest
 import scipy
 from scipy import special
+from scipy import integrate
 
 if __name__ == "src.plotting":
     from src import basis
