@@ -43,7 +43,7 @@ def symMonomialBasisFamily( degree, variate ):
     return m
 
 def symLagrangeBasis( degree, basis_idx, variate ):
-    node = [ -x**0 + i*(x**0 - (-x**0))/(degree) for i in range(0, degree+1)]
+    node = [ -variate**0 + i*(variate**0 - (-variate**0))/(degree) for i in range(0, degree+1)]
     p = variate**0
     for j in range( 0, degree + 1 ):
         if ( j != basis_idx ):
