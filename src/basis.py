@@ -3,6 +3,13 @@ import math
 import numpy
 import sympy
 
+def affine_mapping_1D( domain, target_domain, x ):
+    A = numpy.array( [ [ 1.0, domain[0] ], [ 1.0, domain[1] ] ] )
+    b = numpy.array( [target_domain[0], target_domain[1] ] )
+    c = numpy.linalg.solve( A, b )
+    fx = c[0] + c[1] * x
+    return fx
+
 def changeOfBasis( b1, b2, x1 ):
     T = numpy.linalg.solve( b2, b1 )
     x2 = numpy.dot( T, x1 )
@@ -82,6 +89,35 @@ def rootsLegendreBasis( degree ):
     roots.sort()
     return roots
 
+class Test_affine_mapping_1D( unittest.TestCase ):
+    def test_unit_to_biunit( self ):
+        unit_domain = numpy.array( [ 0.0, 1.0 ] )
+        biunit_domain = numpy.array( [ -1.0, 1.0 ] )
+        self.assertAlmostEqual( first = affine_mapping_1D( domain = unit_domain, target_domain = biunit_domain, x = 0.0 ), second = -1.0 )
+        self.assertAlmostEqual( first = affine_mapping_1D( domain = unit_domain, target_domain = biunit_domain, x = 0.5 ), second =  0.0 )
+        self.assertAlmostEqual( first = affine_mapping_1D( domain = unit_domain, target_domain = biunit_domain, x = 1.0 ), second = +1.0 )
+    
+    def test_biunit_to_unit( self ):
+        unit_domain = numpy.array( [ 0.0, 1.0 ] )
+        biunit_domain = numpy.array( [ -1.0, 1.0 ] )
+        self.assertAlmostEqual( first = affine_mapping_1D( domain = biunit_domain, target_domain = unit_domain, x = -1.0 ), second = 0.0 )
+        self.assertAlmostEqual( first = affine_mapping_1D( domain = biunit_domain, target_domain = unit_domain, x =  0.0 ), second = 0.5 )
+        self.assertAlmostEqual( first = affine_mapping_1D( domain = biunit_domain, target_domain = unit_domain, x = +1.0 ), second = 1.0 )
+    
+    def test_unit_to_biunit( self ):
+        unit_domain = numpy.array( [ 0.0, 1.0 ] )
+        biunit_domain = numpy.array( [ -1.0, 1.0 ] )
+        self.assertAlmostEqual( first = affine_mapping_1D( domain = unit_domain, target_domain = unit_domain, x = 0.0 ), second = 0.0 )
+        self.assertAlmostEqual( first = affine_mapping_1D( domain = unit_domain, target_domain = unit_domain, x = 0.5 ), second = 0.5 )
+        self.assertAlmostEqual( first = affine_mapping_1D( domain = unit_domain, target_domain = unit_domain, x = 1.0 ), second = 1.0 )
+    
+    def test_biunit_to_biunit( self ):
+        unit_domain = numpy.array( [ 0.0, 1.0 ] )
+        biunit_domain = numpy.array( [ -1.0, 1.0 ] )
+        self.assertAlmostEqual( first = affine_mapping_1D( domain = biunit_domain, target_domain = biunit_domain, x = -1.0 ), second = -1.0 )
+        self.assertAlmostEqual( first = affine_mapping_1D( domain = biunit_domain, target_domain = biunit_domain, x =  0.0 ), second =  0.0 )
+        self.assertAlmostEqual( first = affine_mapping_1D( domain = biunit_domain, target_domain = biunit_domain, x = +1.0 ), second = +1.0 )
+    
 class Test_changeOfBasis( unittest.TestCase ):
     def test_standardR2BasisRotate( self ):
         b1 = numpy.eye(2)
