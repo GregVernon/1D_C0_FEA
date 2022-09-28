@@ -65,21 +65,3 @@ def symLegendreBasis( degree, variate ):
 def symLegendreBasisFamily( degree, variate ):
     p = [ symLegendreBasis( p, variate ) for p in range( 0, degree + 1 ) ]
     return p
-
-
-x =  sympy.symbols('x')
-poly_fun = sympy.Poly( 1*x**0 + 1*x**1 + 2*x**2 )
-P, TP = operatorDecomp( poly_fun, symLegendreBasisFamily )
-L, TL = operatorDecomp( poly_fun, symLagrangeBasisFamily )
-C = sympy.Matrix( poly_fun.all_coeffs()[::-1])
-p = symLegendreBasisFamily(2,x)
-l = symLagrangeBasisFamily(2,x)
-f = (T * C) * numpy.array( p )
-
-fp = ( sympy.diag(*C) * P.inv() ) * numpy.array( p )
-fl = ( sympy.diag(*C) * L.inv() ) * numpy.array( l )
-
-sympy.plot( poly_fun.as_expr(), fp.sum().as_expr(), fl.sum().as_expr(), (x, -1, 1) )
-
-
-
