@@ -303,4 +303,75 @@ class Test_computeFitError( unittest.TestCase ):
         num_elems_log10 = numpy.log10( num_elems )
         conv_rate = abs( ( error_log10[-1] - error_log10[0] ) / ( num_elems_log10[-1] - num_elems_log10[0] ) )
         self.assertAlmostEqual( first = conv_rate, second = degree + 1, delta = 5e-1 )
+
+    def test_two_element_p_convergence_sin( self ):
+        target_fun = lambda x : numpy.sin( numpy.pi * x )
+        num_elems = 2
+        domain = [ -1.0, 1.0 ]
+        degree = numpy.array( range( 1, 9 ), dtype = int )
+        eval_basis = basis.evalLagrangeBasis1D
+        error = []
+        for i in range( 0, len( degree ) ):
+            degree_list = [ int( degree[i] ) ] * num_elems
+            coeff, node_coords, ien_array = computeSolution( target_fun = target_fun, domain = domain, degree = degree_list )
+            fit_error, residual = computeFitError( target_fun = target_fun, coeff = coeff, node_coords = node_coords, ien_array = ien_array, eval_basis = basis.evalLagrangeBasis1D )
+            error.append( fit_error )
+        error_log10 = numpy.log10( error )
+        degree_log10 = numpy.log10( degree )
+        conv_rate = abs( ( error_log10[-1] - error_log10[0] ) / ( degree_log10[-1] - degree_log10[0] ) )
     
+    def test_two_element_p_convergence_erfc( self ):
+        target_fun = lambda x : scipy.special.erfc( x )
+        num_elems = 2
+        domain = [ -1.0, 1.0 ]
+        degree = numpy.array( range( 1, 9 ), dtype = int )
+        eval_basis = basis.evalLagrangeBasis1D
+        error = []
+        num_nodes = []
+        for i in range( 0, len( degree ) ):
+            degree_list = [ int( degree[i] ) ] * num_elems
+            coeff, node_coords, ien_array = computeSolution( target_fun = target_fun, domain = domain, degree = degree_list )
+            fit_error, residual = computeFitError( target_fun = target_fun, coeff = coeff, node_coords = node_coords, ien_array = ien_array, eval_basis = basis.evalLagrangeBasis1D )
+            num_nodes.append( len(coeff) )
+            error.append( fit_error )
+        error_log10 = numpy.log10( error )
+        degree_log10 = numpy.log10( degree )
+        conv_rate = abs( ( error_log10[-1] - error_log10[0] ) / ( degree_log10[-1] - degree_log10[0] ) )
+    
+    def test_hp_convergence_sin( self ):
+        target_fun = lambda x : numpy.sin( numpy.pi * x )
+        n = numpy.array( range( 1, 11 ) )
+        num_elems = 1 * 2**n
+        domain = [ -1.0, 1.0 ]
+        degree = numpy.array( range( 1, 11 ), dtype = int )
+        eval_basis = basis.evalLagrangeBasis1D
+        error = []
+        num_nodes = []
+        for i in range( 0, len( degree ) ):
+            degree_list = [ int( degree[i] ) ] * num_elems[i]
+            coeff, node_coords, ien_array = computeSolution( target_fun = target_fun, domain = domain, degree = degree_list )
+            fit_error, residual = computeFitError( target_fun = target_fun, coeff = coeff, node_coords = node_coords, ien_array = ien_array, eval_basis = basis.evalLagrangeBasis1D )
+            num_nodes.append( len(coeff) )
+            error.append( fit_error )
+        error_log10 = numpy.log10( error )
+        degree_log10 = numpy.log10( degree )
+        conv_rate = abs( ( error_log10[-1] - error_log10[0] ) / ( degree_log10[-1] - degree_log10[0] ) )
+
+    def test_hp_convergence_erfc( self ):
+        target_fun = lambda x : scipy.special.erfc( x )
+        n = numpy.array( range( 1, 11 ) )
+        num_elems = 1 * 2**n
+        domain = [ -1.0, 1.0 ]
+        degree = numpy.array( range( 1, 11 ), dtype = int )
+        eval_basis = basis.evalLagrangeBasis1D
+        error = []
+        num_nodes = []
+        for i in range( 0, len( degree ) ):
+            degree_list = [ int( degree[i] ) ] * num_elems[i]
+            coeff, node_coords, ien_array = computeSolution( target_fun = target_fun, domain = domain, degree = degree_list )
+            fit_error, residual = computeFitError( target_fun = target_fun, coeff = coeff, node_coords = node_coords, ien_array = ien_array, eval_basis = basis.evalLagrangeBasis1D )
+            num_nodes.append( len(coeff) )
+            error.append( fit_error )
+        error_log10 = numpy.log10( error )
+        degree_log10 = numpy.log10( degree )
+        conv_rate = abs( ( error_log10[-1] - error_log10[0] ) / ( degree_log10[-1] - degree_log10[0] ) )
