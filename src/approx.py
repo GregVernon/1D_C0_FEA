@@ -41,7 +41,7 @@ def evaluateSolutionAt( x, coeff, node_coords, ien_array, eval_basis ):
     elem_idx = mesh.getElementIdxContainingPoint( node_coords, ien_array, x )
     elem_nodes = ien_array[elem_idx]
     elem_domain = [ node_coords[ elem_nodes[0] ], node_coords[ elem_nodes[-1] ] ]
-    xi = mesh.refToParamCoords( x, elem_domain )
+    xi = mesh.spatialToParamCoords( x, elem_domain )
     degree = len( elem_nodes ) - 1
     y = 0.0
     for n in range( 0, len( elem_nodes ) ):

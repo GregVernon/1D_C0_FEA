@@ -22,14 +22,14 @@ def generateMesh( xmin, xmax, degree ):
     num_nodes = node_id + 1
     return node_coords, ien_array
 
-def refToParamCoords( x_ref, reference_domain ):
+def spatialToParamCoords( x_ref, reference_domain ):
     A = numpy.array( [ [ 1.0, reference_domain[0] ], [ 1.0, reference_domain[1] ] ] )
     b = numpy.array( [ -1.0, 1.0 ] )
     c = numpy.linalg.solve( A, b )
     x_ref = c[0] + c[1] * x_ref
     return x_ref
 
-def paramToRefCoords( x_param, reference_domain ):
+def paramToSpatialCoords( x_param, reference_domain ):
     A = numpy.array( [ [ 1.0, -1.0 ], [ 1.0, 1.0 ] ] )
     b = numpy.array( [ reference_domain[0], reference_domain[1] ] )
     c = numpy.linalg.solve( A, b )
@@ -112,31 +112,31 @@ class Test_getElementIdxContainingPoint( unittest.TestCase ):
         self.assertEqual( first = getElementIdxContainingPoint( node_coords = node_coords, ien_array = ien_array, point = 2.5 ), second = 2 )
         self.assertEqual( first = getElementIdxContainingPoint( node_coords = node_coords, ien_array = ien_array, point = 3.0 ), second = 2 )
 
-class Test_refToParamCoords( unittest.TestCase ):
+class Test_spatialToParamCoords( unittest.TestCase ):
     def test_unit_to_biunit( self ):
         unit_domain = numpy.array( [ 0.0, 1.0 ] )
-        self.assertAlmostEqual( first = refToParamCoords( x_ref =  0.0, reference_domain = unit_domain ), second = -1.0 )
-        self.assertAlmostEqual( first = refToParamCoords( x_ref =  0.5, reference_domain = unit_domain ), second =  0.0 )
-        self.assertAlmostEqual( first = refToParamCoords( x_ref = +1.0, reference_domain = unit_domain ), second = +1.0 )
+        self.assertAlmostEqual( first = spatialToParamCoords( x_ref =  0.0, reference_domain = unit_domain ), second = -1.0 )
+        self.assertAlmostEqual( first = spatialToParamCoords( x_ref =  0.5, reference_domain = unit_domain ), second =  0.0 )
+        self.assertAlmostEqual( first = spatialToParamCoords( x_ref = +1.0, reference_domain = unit_domain ), second = +1.0 )
     
     def test_biunit_to_biunit( self ):
         biunit_domain = numpy.array( [ -1.0, 1.0 ] )
-        self.assertAlmostEqual( first = refToParamCoords( x_ref = -1.0, reference_domain = biunit_domain ), second = -1.0 )
-        self.assertAlmostEqual( first = refToParamCoords( x_ref =  0.0, reference_domain = biunit_domain ), second =  0.0 )
-        self.assertAlmostEqual( first = refToParamCoords( x_ref = +1.0, reference_domain = biunit_domain ), second = +1.0 )
+        self.assertAlmostEqual( first = spatialToParamCoords( x_ref = -1.0, reference_domain = biunit_domain ), second = -1.0 )
+        self.assertAlmostEqual( first = spatialToParamCoords( x_ref =  0.0, reference_domain = biunit_domain ), second =  0.0 )
+        self.assertAlmostEqual( first = spatialToParamCoords( x_ref = +1.0, reference_domain = biunit_domain ), second = +1.0 )
     
-class Test_paramToRefCoords( unittest.TestCase ):
+class Test_paramToSpatialCoords( unittest.TestCase ):
     def test_biunit_to_unit( self ):
         unit_domain = numpy.array( [ 0.0, 1.0 ] )
-        self.assertAlmostEqual( first = paramToRefCoords( x_param = -1.0, reference_domain = unit_domain ), second = 0.0 )
-        self.assertAlmostEqual( first = paramToRefCoords( x_param =  0.0, reference_domain = unit_domain ), second = 0.5 )
-        self.assertAlmostEqual( first = paramToRefCoords( x_param = +1.0, reference_domain = unit_domain ), second = 1.0 )
+        self.assertAlmostEqual( first = paramToSpatialCoords( x_param = -1.0, reference_domain = unit_domain ), second = 0.0 )
+        self.assertAlmostEqual( first = paramToSpatialCoords( x_param =  0.0, reference_domain = unit_domain ), second = 0.5 )
+        self.assertAlmostEqual( first = paramToSpatialCoords( x_param = +1.0, reference_domain = unit_domain ), second = 1.0 )
     
     def test_biunit_to_biunit( self ):
         biunit_domain = numpy.array( [ -1.0, 1.0 ] )
-        self.assertAlmostEqual( first = paramToRefCoords( x_param = -1.0, reference_domain = biunit_domain ), second = -1.0 )
-        self.assertAlmostEqual( first = paramToRefCoords( x_param =  0.0, reference_domain = biunit_domain ), second =  0.0 )
-        self.assertAlmostEqual( first = paramToRefCoords( x_param = +1.0, reference_domain = biunit_domain ), second = +1.0 )
+        self.assertAlmostEqual( first = paramToSpatialCoords( x_param = -1.0, reference_domain = biunit_domain ), second = -1.0 )
+        self.assertAlmostEqual( first = paramToSpatialCoords( x_param =  0.0, reference_domain = biunit_domain ), second =  0.0 )
+        self.assertAlmostEqual( first = paramToSpatialCoords( x_param = +1.0, reference_domain = biunit_domain ), second = +1.0 )
     
 class Test_generateMesh( unittest.TestCase ):
     def test_make_1_linear_elem( self ):
