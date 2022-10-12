@@ -39,17 +39,46 @@ def paramToRefCoords( x_param, reference_domain ):
 def getElementIdxContainingPoint( node_coords, ien_array, point ):
     num_elems = len( ien_array )
     for e in range( 0, num_elems ):
-        elem_nodes = ien_array[e]
-        elem_domain = [ node_coords[ elem_nodes[0] ], node_coords[ elem_nodes[-1] ] ]
+        elem_domain = getElementDomain( node_coords, ien_array, e )
         if ( ( point >= elem_domain[0] ) and ( point <= elem_domain[1] ) ):
             return e
     raise Exception( "ELEMENT_CONTAINING_POINT_NOT_FOUND" )
+
+def getElementDomain( node_coords, ien_array, elem_idx):
+    elem_nodes = ien_array[elem_idx]
+    elem_domain = numpy.array( [ node_coords[ elem_nodes[0] ], node_coords[ elem_nodes[-1] ] ] )
+    return elem_domain
 
 def getDegreeListFromIENArray( ien_array ):
     degree = []
     for elem in ien_array:
         degree.append( len( ien_array[elem] ) )
     return degree
+
+class Test_getElementDomain( unittest.TestCase ):
+    def test_linears( self ):
+        node_coords, ien_array = generateMesh( xmin = 0.0, xmax = 3.0, degree = [ 1, 1, 1 ] )
+        test_elem_domain_0 = getElementDomain( node_coords = node_coords, ien_array = ien_array, elem_idx = 0 )
+        test_elem_domain_1 = getElementDomain( node_coords = node_coords, ien_array = ien_array, elem_idx = 1 )
+        test_elem_domain_2 = getElementDomain( node_coords = node_coords, ien_array = ien_array, elem_idx = 2 )
+        gold_elem_domain_0 = numpy.array( [0.0, 1.0 ] )
+        gold_elem_domain_1 = numpy.array( [1.0, 2.0 ] )
+        gold_elem_domain_2 = numpy.array( [2.0, 3.0 ] )
+        self.assertTrue( numpy.allclose( test_elem_domain_0, gold_elem_domain_0 ) )
+        self.assertTrue( numpy.allclose( test_elem_domain_1, gold_elem_domain_1 ) )
+        self.assertTrue( numpy.allclose( test_elem_domain_2, gold_elem_domain_2 ) )
+    
+    def test_quadratics( self ):
+        node_coords, ien_array = generateMesh( xmin = 0.0, xmax = 3.0, degree = [ 2, 2, 2 ] )
+        test_elem_domain_0 = getElementDomain( node_coords = node_coords, ien_array = ien_array, elem_idx = 0 )
+        test_elem_domain_1 = getElementDomain( node_coords = node_coords, ien_array = ien_array, elem_idx = 1 )
+        test_elem_domain_2 = getElementDomain( node_coords = node_coords, ien_array = ien_array, elem_idx = 2 )
+        gold_elem_domain_0 = numpy.array( [0.0, 1.0 ] )
+        gold_elem_domain_1 = numpy.array( [1.0, 2.0 ] )
+        gold_elem_domain_2 = numpy.array( [2.0, 3.0 ] )
+        self.assertTrue( numpy.allclose( test_elem_domain_0, gold_elem_domain_0 ) )
+        self.assertTrue( numpy.allclose( test_elem_domain_1, gold_elem_domain_1 ) )
+        self.assertTrue( numpy.allclose( test_elem_domain_2, gold_elem_domain_2 ) )
 
 class Test_getElementIdxContainingPoint( unittest.TestCase ):
     def test_single_element( self ):
@@ -147,7 +176,7 @@ class Test_generateMesh( unittest.TestCase ):
         self.assertIsInstance( obj = ien_array, cls = dict )
         self.assertTrue( numpy.allclose( node_coords, gold_node_coords ) )
         self.assertDictEqual( d1 = gold_ien_array, d2 = ien_array )
-        
+    
     def test_make_4_quadratic_elems( self ):
         gold_node_coords = numpy.array( [ 0.0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1.0 ] )
         gold_ien_array = { 0: [ 0, 1, 2 ], 1: [ 2, 3, 4 ], 2: [ 4, 5, 6 ], 3: [ 6, 7, 8 ] }
