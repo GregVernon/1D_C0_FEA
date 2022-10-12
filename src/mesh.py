@@ -52,8 +52,15 @@ def getElementDomain( node_coords, ien_array, elem_idx):
 def getDegreeListFromIENArray( ien_array ):
     degree = []
     for elem in ien_array:
-        degree.append( len( ien_array[elem] ) )
+        degree.append( len( ien_array[elem] ) - 1 )
     return degree
+
+class Test_getDegreeListFromIENArray( unittest.TestCase ):
+    def test_linears( self ):
+        gold_degree_list = [ 1, 1, 1 ]
+        node_coords, ien_array = generateMesh( xmin = 0.0, xmax = 3.0, degree = gold_degree_list )
+        test_degree_list = getDegreeListFromIENArray( ien_array )
+        self.assertListEqual( gold_degree_list, test_degree_list )
 
 class Test_getElementDomain( unittest.TestCase ):
     def test_linears( self ):
