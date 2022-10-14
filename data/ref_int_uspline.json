@@ -1,0 +1,212 @@
+{
+  "patch_id": 0,
+  "dim": 1,
+  "num_elems": 5,
+  "is_rational": false,
+  "num_vertices": 6,
+  "num_nodes": 8,
+  "nodes": [
+    [ 0, 0, 0, 1 ], 
+    [ 1, 0, 0, 1 ], 
+    [ 1.499999999999999, 0, 0, 1 ], 
+    [ 2.3333333333324, 0, 0, 1 ], 
+    [ 2.666666666665599, 0, 0, 1 ], 
+    [ 3.499999999999999, 0, 0, 1 ], 
+    [ 4, 0, 0, 1 ], 
+    [ 5, 0, 0, 1 ]
+  ],
+  "elements": {
+    "num_elem_blocks": 3,
+    "element_block_info": [ {
+      "element_type": "Cube",
+      "num_elems": 2,
+      "num_nodes": 2,
+      "num_coefficient_vectors": 2,
+      "deg_s": 1,
+      "deg_t": -1,
+      "deg_u": -1
+    },
+    {
+      "element_type": "Cube",
+      "num_elems": 2,
+      "num_nodes": 3,
+      "num_coefficient_vectors": 3,
+      "deg_s": 2,
+      "deg_t": -1,
+      "deg_u": -1
+    },
+    {
+      "element_type": "Cube",
+      "num_elems": 1,
+      "num_nodes": 4,
+      "num_coefficient_vectors": 4,
+      "deg_s": 3,
+      "deg_t": -1,
+      "deg_u": -1
+    } ],
+    "element_blocks": [ {
+      "us_cid": 0,
+      "node_ids": [ 0, 1 ],
+      "coeff_vector_ids": [ 10, 4 ]
+    },
+    {
+      "us_cid": 4,
+      "node_ids": [ 6, 7 ],
+      "coeff_vector_ids": [ 10, 4 ]
+    },
+    {
+      "us_cid": 1,
+      "node_ids": [ 1, 2, 3 ],
+      "coeff_vector_ids": [ 11, 5, 1 ]
+    },
+    {
+      "us_cid": 3,
+      "node_ids": [ 4, 5, 6 ],
+      "coeff_vector_ids": [ 8, 7, 2 ]
+    },
+    {
+      "us_cid": 2,
+      "node_ids": [ 2, 3, 4, 5 ],
+      "coeff_vector_ids": [ 6, 9, 3, 0 ]
+    } ]
+  },
+  "vertex_connectivity": [ [ 0, 1 ], [ 4, 5 ], [ 1, 2 ], [ 3, 4 ], [ 2, 3 ] ],
+  "coefficients": {
+    "num_dense_coeff_blocks": 10,
+    "num_sparse_coeff_blocks": 0,
+    "dense_vector_info": [ {
+      "num_coeff_vectors": 1,
+      "num_components": 4
+    },
+    {
+      "num_coeff_vectors": 2,
+      "num_components": 3
+    },
+    {
+      "num_coeff_vectors": 1,
+      "num_components": 4
+    },
+    {
+      "num_coeff_vectors": 1,
+      "num_components": 2
+    },
+    {
+      "num_coeff_vectors": 1,
+      "num_components": 3
+    },
+    {
+      "num_coeff_vectors": 1,
+      "num_components": 4
+    },
+    {
+      "num_coeff_vectors": 2,
+      "num_components": 3
+    },
+    {
+      "num_coeff_vectors": 1,
+      "num_components": 4
+    },
+    {
+      "num_coeff_vectors": 1,
+      "num_components": 2
+    },
+    {
+      "num_coeff_vectors": 1,
+      "num_components": 3
+    } ],
+    "sparse_vector_info": [  ],
+    "dense_coefficient_vectors": [ {
+      "components": [
+        0, 
+        0, 
+        0, 
+        0.4
+      ]
+    },
+    {
+      "components": [
+        0, 
+        0, 
+        0.60000000000024
+      ]
+    },
+    {
+      "components": [
+        0, 
+        0, 
+        1
+      ]
+    },
+    {
+      "components": [
+        0, 
+        0, 
+        1.0000000000004, 
+        0.60000000000024
+      ]
+    },
+    {
+      "components": [
+        0, 
+        1
+      ]
+    },
+    {
+      "components": [
+        0, 
+        1, 
+        0.4
+      ]
+    },
+    {
+      "components": [
+        0.4, 
+        0, 
+        0, 
+        0
+      ]
+    },
+    {
+      "components": [
+        0.4, 
+        1, 
+        0
+      ]
+    },
+    {
+      "components": [
+        0.60000000000024, 
+        0, 
+        0
+      ]
+    },
+    {
+      "components": [
+        0.60000000000024, 
+        1.0000000000004, 
+        0, 
+        0
+      ]
+    },
+    {
+      "components": [
+        1, 
+        0
+      ]
+    },
+    {
+      "components": [
+        1, 
+        0, 
+        0
+      ]
+    } ],
+    "sparse_coefficient_vectors": [  ]
+  },
+  "num_coeff_vecs": 12,
+  "block_elem_map": [ {
+    "block_id": 0,
+    "block_name": "Default Block",
+    "elem_ids": [ 0, 1, 2, 3, 4 ]
+  } ]
+}
