@@ -1,6 +1,15 @@
 import json
 import numpy
+import matplotlib
+import matplotlib.pyplot as plt
 import unittest
+
+if __name__ == "src.bext":
+    from src import basis
+elif __name__ == "bext":
+    import basis
+
+#matplotlib.use('TkAgg')
 
 def readBEXT( filename ):
     f = open( filename, "r" )
@@ -17,6 +26,7 @@ def getNumVertices( uspline ):
 def elemIdFromElemIdx( uspline, elem_idx ):
     element_blocks = uspline["elements"]["element_blocks"]
     elem_id = element_blocks[ elem_idx ]["us_cid"]
+    return elem_id
 
 def elemIdxFromElemId( uspline, elem_id ):
     element_blocks = uspline["elements"]["element_blocks"]
@@ -24,12 +34,13 @@ def elemIdxFromElemId( uspline, elem_id ):
         if element_blocks[ elem_idx ]["us_cid"] == elem_id:
             return elem_idx
 
-def getElementDegree( uspline, elem_idx ):
+def getElementDegree( uspline, elem_id ):
+    elem_idx = elemIdxFromElemId( uspline, elem_id )
     return len( uspline["elements"]["element_blocks"][elem_idx]["node_ids"] ) - 1
 
 def getElementDomain( uspline, elem_id ):
     elem_bezier_nodes = getElementBezierNodes( uspline, elem_id )
-    elem_domain = [ min( elem_bezier_nodes ), max( elem_bezier_nodes ) ]
+    elem_domain = [ min( elem_bezier_nodes[:,0] ), max( elem_bezier_nodes[:,0] ) ]
     return elem_domain
 
 def getElementNodeIds( uspline, elem_id ):
@@ -53,15 +64,16 @@ def getCoefficientVectors( uspline ):
         coeff_vectors[i] = coeff_vectors_list[i]["components"]
     return coeff_vectors
 
-def getElementCoefficientVectorIds( uspline, elem_idx ):
+def getElementCoefficientVectorIds( uspline, elem_id ):
+    elem_idx = elemIdxFromElemId( uspline, elem_id )
     return uspline["elements"]["element_blocks"][elem_idx]["coeff_vector_ids"]
 
 def getVertexConnectivity( uspline ):
     return uspline["vertex_connectivity"]
 
-def getElementExtractionOperator( uspline, elem_idx ):
+def getElementExtractionOperator( uspline, elem_id ):
     coeff_vectors = getCoefficientVectors( uspline )    
-    coeff_vector_ids = getElementCoefficientVectorIds( uspline, elem_idx )
+    coeff_vector_ids = getElementCoefficientVectorIds( uspline, elem_id )
     C = numpy.zeros( shape = (len( coeff_vector_ids ), len( coeff_vector_ids ) ), dtype = "double" )
     for n in range( 0, len( coeff_vector_ids ) ):
         C[n,:] = coeff_vectors[ coeff_vector_ids[n] ]
@@ -73,8 +85,8 @@ def getElementBezierNodes( uspline, elem_id ):
     element_bezier_node_coords = C.T @ elem_nodes
     return element_bezier_node_coords
 
-def getElementBezierVertices( uspline, elem_idx ):
-    element_bezier_node_coords = getElementBezierNodes( uspline, elem_idx )
+def getElementBezierVertices( uspline, elem_id ):
+    element_bezier_node_coords = getElementBezierNodes( uspline, elem_id )
     vertex_connectivity = getVertexConnectivity( uspline )
     vertex_coords = numpy.array( [ element_bezier_node_coords[0], element_bezier_node_coords[-1] ] )
     return vertex_coords
@@ -150,4 +162,117 @@ class Test_two_element_quadratic_bspline( unittest.TestCase ):
         test_element_bezier_vertices_1 = getElementBezierVertices( self.uspline, 1 )
         self.assertTrue( numpy.allclose( test_element_bezier_vertices_0, gold_element_bezier_vertices_0 ) )
         self.assertTrue( numpy.allclose( test_element_bezier_vertices_1, gold_element_bezier_vertices_1 ) )
+
+    def test_plotBasis( self ):
+        fig, ax = plt.subplots()
+        num_pts = 100
+        xi = numpy.linspace( 0, 1, num_pts )
+        for elem_idx in range( 0, getNumElems( self.uspline ) ):
+            elem_id = elemIdFromElemIdx( self.uspline, elem_idx )
+            elem_degree = getElementDegree( self.uspline, elem_id )
+            C = getElementExtractionOperator( self.uspline, elem_id )
+            elem_domain = getElementDomain( self.uspline, elem_id )
+            x = numpy.linspace( elem_domain[0], elem_domain[1], num_pts )
+            y = numpy.zeros( shape = ( 3, num_pts ) )
+            for n in range( 0, elem_degree + 1 ):
+                for i in range( 0, len( x ) ):
+                    y[n, i] = basis.evalBernsteinBasis1D( elem_degree, n, xi[i] )
+            y = C @ y
+            ax.plot( x, y.T, color = getLineColor( elem_idx ) )
+        plt.show()
     
+class Test_multi_deg_uspline( unittest.TestCase ):
+    def setUp( self ):
+        self.uspline = readBEXT( "data/multi_deg_uspline.json" )
+    
+    def test_getNumElems( self ):
+        self.assertEqual( getNumElems( self.uspline ), 4 )
+    
+    def test_getNumVertices( self ):
+        self.assertEqual( getNumVertices( self.uspline ), 5 )
+    
+    def test_getElementDegree( self ):
+        self.assertEqual( getElementDegree( self.uspline, 0 ),  1 )
+        self.assertEqual( getElementDegree( self.uspline, 1 ),  2 )
+        self.assertEqual( getElementDegree( self.uspline, 2 ),  3 )
+        self.assertEqual( getElementDegree( self.uspline, 3 ),  4 )
+    
+    def test_getSplineNodes( self ):
+        gold_spline_nodes = numpy.array( [ [0.0, 0.0, 0.0, 1.0], [1.953125, 0.0, 0.0, 1.0], [3.125, 0.0, 0.0, 1.0], [3.75, 0.0, 0.0, 1.0], [4.0, 0.0, 0.0, 1.0] ] )
+        test_spline_nodes = getSplineNodes( self.uspline )
+        self.assertTrue( numpy.allclose( test_spline_nodes, gold_spline_nodes, atol = 1e-9 ) )
+    
+    def test_getCoefficientVectors( self ):
+        gold_spline_nodes = { 0: [ 0, 0, 0, 0, 1 ], 1: [ 0,  0,  0,  0.2 ], 2: [ 0, 0, 0.24 ], 3: [ 0,  0.512 ], 4: [ 0.008,  0,  0,  0,  0 ], 5: [ 0.12,  0.04533333333333333,  0.01866666666666666,  0.008 ], 6: [ 0.192,  0.08,  0,  0,  0 ], 7: [ 0.2,  0.35,  0.6,  1.0,  0 ], 8: [ 0.24,  0.4,  0.64,  0.6 ], 9: [ 0.488,  0.232,  0.12 ], 10: [ 0.512,  0.768,  0.64 ], 11: [ 0.6,  0.57,  0.4,  0,  0 ], 12: [ 0.64,  0.5546666666666668,  0.3413333333333334,  0.192 ], 13: [ 1.0,  0.488 ] }
+        test_spline_nodes = getCoefficientVectors( self.uspline )
+        for i in gold_spline_nodes:
+            self.assertTrue( numpy.allclose( gold_spline_nodes[i], test_spline_nodes[i], atol = 0.01 ) )
+    
+    def test_getElementCoefficientVectorIds( self ):
+        self.assertEqual( getElementCoefficientVectorIds( self.uspline, 0 ), [13, 3] )
+        self.assertEqual( getElementCoefficientVectorIds( self.uspline, 1 ), [9, 10, 2] )
+        self.assertEqual( getElementCoefficientVectorIds( self.uspline, 2 ), [5, 12, 8, 1] )
+        self.assertEqual( getElementCoefficientVectorIds( self.uspline, 3 ), [4, 6, 11, 7, 0] )
+    
+    def test_getVertexConnectivity( self ):
+        self.assertEqual( getVertexConnectivity( self.uspline ), [ [ 0, 1 ], [ 1, 2 ], [ 2, 3 ], [ 3, 4 ] ] )
+    
+    def test_getElementExtractionOperator( self ):
+        gold_extraction_operator_0 = numpy.array( [[1.0, 0.488], [0.0, 0.512]] )
+        gold_extraction_operator_1 = numpy.array( [[0.488, 0.232, 0.12], [0.512, 0.768, 0.64], [0.0, 0.0, 0.24]] )
+        gold_extraction_operator_2 = numpy.array( [[0.12, 0.0453, 0.0187, 0.008], [0.64, 0.5547, 0.3413, 0.192], [0.24, 0.4, 0.64, 0.6], [0.0, 0.0, 0.0, 0.2]] )
+        gold_extraction_operator_3 = numpy.array( [[0.008, 0.0, 0.0, 0.0, 0.0], [0.192, 0.08, 0.0, 0.0, 0.0], [0.6, 0.57, 0.4, 0.0, 0.0], [0.2, 0.35, 0.6, 1.0, 0.0], [0.0, 0.0, 0.0, 0.0, 1.0]] )
+        test_extraction_operator_0 = getElementExtractionOperator( self.uspline, 0 )
+        test_extraction_operator_1 = getElementExtractionOperator( self.uspline, 1 )
+        test_extraction_operator_2 = getElementExtractionOperator( self.uspline, 2 )
+        test_extraction_operator_3 = getElementExtractionOperator( self.uspline, 3 )
+        self.assertTrue( numpy.allclose( test_extraction_operator_0, gold_extraction_operator_0, atol = 0.01 ) )
+        self.assertTrue( numpy.allclose( test_extraction_operator_1, gold_extraction_operator_1, atol = 0.01 ) )
+        self.assertTrue( numpy.allclose( test_extraction_operator_2, gold_extraction_operator_2, atol = 0.01 ) )
+        self.assertTrue( numpy.allclose( test_extraction_operator_3, gold_extraction_operator_3, atol = 0.01 ) )
+    
+    def test_getElementBezierNodes( self ):
+        gold_element_bezier_nodes_0 = numpy.array( [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]] )
+        gold_element_bezier_nodes_1 = numpy.array( [[1.0, 0.0, 0.0], [1.5, 0.0, 0.0], [2.0, 0.0, 0.0]] )
+        gold_element_bezier_nodes_2 = numpy.array( [[2.0, 0.0, 0.0], [2.0 + (1.0/3.0), 0.0, 0.0], [2.0 + (2.0/3.0), 0.0, 0.0], [3.0, 0.0, 0.0]] )
+        gold_element_bezier_nodes_3 = numpy.array( [[3.0, 0.0, 0.0], [3.25, 0.0, 0.0], [3.5, 0.0, 0.0], [3.75, 0.0, 0.0], [4.0, 0.0, 0.0]] )
+        test_element_bezier_nodes_0 = getElementBezierNodes( self.uspline, 0 )
+        test_element_bezier_nodes_1 = getElementBezierNodes( self.uspline, 1 )
+        test_element_bezier_nodes_2 = getElementBezierNodes( self.uspline, 2 )
+        test_element_bezier_nodes_3 = getElementBezierNodes( self.uspline, 3 )
+        self.assertTrue( numpy.allclose( test_element_bezier_nodes_0, gold_element_bezier_nodes_0 ) )
+        self.assertTrue( numpy.allclose( test_element_bezier_nodes_1, gold_element_bezier_nodes_1 ) )
+        self.assertTrue( numpy.allclose( test_element_bezier_nodes_2, gold_element_bezier_nodes_2 ) )
+        self.assertTrue( numpy.allclose( test_element_bezier_nodes_3, gold_element_bezier_nodes_3 ) )
+
+    def test_getElementBezierVertices( self ):
+        gold_element_bezier_vertices_0 = numpy.array( [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]] )
+        gold_element_bezier_vertices_1 = numpy.array( [[1.0, 0.0, 0.0], [2.0, 0.0, 0.0]] )
+        test_element_bezier_vertices_0 = getElementBezierVertices( self.uspline, 0 )
+        test_element_bezier_vertices_1 = getElementBezierVertices( self.uspline, 1 )
+        self.assertTrue( numpy.allclose( test_element_bezier_vertices_0, gold_element_bezier_vertices_0 ) )
+        self.assertTrue( numpy.allclose( test_element_bezier_vertices_1, gold_element_bezier_vertices_1 ) )
+
+    def test_plotBasis( self ):
+        fig, ax = plt.subplots()
+        num_pts = 100
+        xi = numpy.linspace( 0, 1, num_pts )
+        for elem_idx in range( 0, getNumElems( self.uspline ) ):
+            elem_id = elemIdFromElemIdx( self.uspline, elem_idx )
+            elem_degree = getElementDegree( self.uspline, elem_id )
+            C = getElementExtractionOperator( self.uspline, elem_id )
+            elem_domain = getElementDomain( self.uspline, elem_id )
+            x = numpy.linspace( elem_domain[0], elem_domain[1], num_pts )
+            y = numpy.zeros( shape = ( elem_degree + 1, num_pts ) )
+            for n in range( 0, elem_degree + 1 ):
+                for i in range( 0, len( x ) ):
+                    y[n, i] = basis.evalBernsteinBasis1D( elem_degree, n, xi[i] )
+            y = C @ y
+            ax.plot( x, y.T, color = getLineColor( elem_idx ) )
+        plt.show()
+    
+def getLineColor( idx ):
+    colors = list( matplotlib.colors.TABLEAU_COLORS.keys() )
+    num_colors = len( colors )
+    mod_idx = idx % num_colors
+    return matplotlib.colors.TABLEAU_COLORS[ colors[ mod_idx ] ]
