@@ -23,6 +23,9 @@ def getNumElems( uspline ):
 def getNumVertices( uspline ):
     return uspline["num_vertices"]
 
+def getNumNodes( uspline ):
+    return getSplineNodes( uspline ).shape[0]
+
 def elemIdFromElemIdx( uspline, elem_idx ):
     element_blocks = uspline["elements"]["element_blocks"]
     elem_id = element_blocks[ elem_idx ]["us_cid"]
@@ -99,6 +102,15 @@ def getBezierNodes( uspline ):
         bezier_nodes.append( elem_bezier_nodes )
     bezier_nodes = uniquetol( bezier_nodes, 1e-12 )
     return bezier_nodes
+
+def getElementIdContainingPoint( uspline, point ):
+    num_elems = getNumElems( uspline )
+    for elem_idx in range( 0, num_elems ):
+        elem_id = elemIdFromElemIdx( uspline, elem_idx )
+        elem_domain = getElementDomain( uspline, elem_id )
+        if ( ( point >= elem_domain[0] ) and ( point <= elem_domain[1] ) ):
+            return elem_id
+    raise Exception( "ELEMENT_CONTAINING_POINT_NOT_FOUND" )
 
 def uniquetol( input_array, tol ):
     equalityArray = numpy.zeros( len( input_array ), dtype="bool" )

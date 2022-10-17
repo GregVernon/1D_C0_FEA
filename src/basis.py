@@ -35,6 +35,12 @@ def evalBernsteinBasis1D( degree, basis_idx, variate ):
     basis_val = term_1 * term_2 * term_3
     return basis_val
 
+def evalBernsteinBasis1DVector( degree, variate ):
+    basis_val_vector = numpy.zeros( shape = ( degree + 1, 1 ) )
+    for basis_idx in range( 0, degree + 1 ):
+        basis_val_vector[basis_idx] = evalBernsteinBasis1D( degree, basis_idx, variate )
+    return basis_val_vector
+
 def evalBernsteinBasisDeriv( degree, basis_idx, deriv, variate ):
     if ( variate < 0.0 ) or ( variate > +1.0 ):
         raise Exception( "NOT_IN_DOMAIN" )
