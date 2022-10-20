@@ -121,37 +121,31 @@ class Test_computeSolutionDegreeRefine( unittest.TestCase ):
         target_fun = lambda x : numpy.sin( numpy.pi * x )
         domain = [ -1, 1 ]
         coeff, node_coords, ien_array = computeSolutionDegreeRefine( target_fun = target_fun, domain = domain, num_elems = 1, target_error = 1e-4 )
-        print( mesh.getDegreeListFromIENArray( ien_array ) )
-
+    
     def test_single_element_exp( self ):
         target_fun = lambda x : numpy.exp( x )
         domain = [ -1, 1 ]
         coeff, node_coords, ien_array = computeSolutionDegreeRefine( target_fun = target_fun, domain = domain, num_elems = 1, target_error = 1e-4 )
-        print( mesh.getDegreeListFromIENArray( ien_array ) )
     
     def test_single_element_erfc( self ):
         target_fun = lambda x : scipy.special.erfc( x )
         domain = [ -2, 2 ]
         coeff, node_coords, ien_array = computeSolutionDegreeRefine( target_fun = target_fun, domain = domain, num_elems = 1, target_error = 1e-8 )
-        print( mesh.getDegreeListFromIENArray( ien_array ) )
     
     def test_four_element_sin( self ):
         target_fun = lambda x : numpy.sin( numpy.pi * x )
         domain = [ -1, 1 ]
         coeff, node_coords, ien_array = computeSolutionDegreeRefine( target_fun = target_fun, domain = domain, num_elems = 4, target_error = 1e-4 )
-        print( mesh.getDegreeListFromIENArray( ien_array ) )
-
+    
     def test_four_element_exp( self ):
         target_fun = lambda x : numpy.exp( x )
         domain = [ -1, 1 ]
         coeff, node_coords, ien_array = computeSolutionDegreeRefine( target_fun = target_fun, domain = domain, num_elems = 4, target_error = 1e-4 )
-        print( mesh.getDegreeListFromIENArray( ien_array ) )
     
     def test_four_element_erfc( self ):
         target_fun = lambda x : scipy.special.erfc( x )
         domain = [ -2, 2 ]
         coeff, node_coords, ien_array = computeSolutionDegreeRefine( target_fun = target_fun, domain = domain, num_elems = 4, target_error = 1e-8 )
-        print( mesh.getDegreeListFromIENArray( ien_array ) )
 
 class Test_computeFitError( unittest.TestCase ):
     def test_single_element_quad_poly( self ):
