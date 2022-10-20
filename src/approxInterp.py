@@ -4,10 +4,10 @@ import numpy
 import sympy
 import scipy
 
-if __name__ == "src.approx":
+if __name__ == "src.approxInterp":
     from src import basis
     from src import mesh
-elif __name__ == "approx":
+elif __name__ == "approxInterp":
     import basis
     import mesh
 

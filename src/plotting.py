@@ -9,11 +9,11 @@ from scipy import integrate
 if __name__ == "src.plotting":
     from src import basis
     from src import mesh
-    from src import approx
+    from src import approxInterp
 elif __name__ == "plotting":
     import basis
     import mesh
-    import approx
+    import approxInterp
 
 ## Uncomment this if you want to see figures
 # matplotlib.use('TkAgg')
@@ -306,8 +306,8 @@ class Test_plotErrorConvergence( unittest.TestCase ):
         error = []
         for i in range( 0, len( num_elems ) ):
             degree_list = [ degree ] * num_elems[i]
-            coeff, node_coords, ien_array = approx.computeSolution( target_fun = target_fun, domain = domain, degree = degree_list )
-            fit_error, residual = approx.computeFitError( target_fun = target_fun, coeff = coeff, node_coords = node_coords, ien_array = ien_array, eval_basis = basis.evalLagrangeBasis1D )
+            coeff, node_coords, ien_array = approxInterp.computeSolution( target_fun = target_fun, domain = domain, degree = degree_list )
+            fit_error, residual = approxInterp.computeFitError( target_fun = target_fun, coeff = coeff, node_coords = node_coords, ien_array = ien_array, eval_basis = basis.evalLagrangeBasis1D )
             error.append( fit_error )
         error_log10 = numpy.log10( error )
         num_elems_log10 = numpy.log10( num_elems )
@@ -328,8 +328,8 @@ class Test_plotErrorConvergence( unittest.TestCase ):
         error = []
         for i in range( 0, len( num_elems ) ):
             degree_list = [ degree ] * num_elems[i]
-            coeff, node_coords, ien_array = approx.computeSolution( target_fun = target_fun, domain = domain, degree = degree_list )
-            fit_error, residual = approx.computeFitError( target_fun = target_fun, coeff = coeff, node_coords = node_coords, ien_array = ien_array, eval_basis = basis.evalLagrangeBasis1D )
+            coeff, node_coords, ien_array = approxInterp.computeSolution( target_fun = target_fun, domain = domain, degree = degree_list )
+            fit_error, residual = approxInterp.computeFitError( target_fun = target_fun, coeff = coeff, node_coords = node_coords, ien_array = ien_array, eval_basis = basis.evalLagrangeBasis1D )
             error.append( fit_error )
         error_log10 = numpy.log10( error )
         num_elems_log10 = numpy.log10( num_elems )
@@ -350,8 +350,8 @@ class Test_plotErrorConvergence( unittest.TestCase ):
         error = []
         for i in range( 0, len( degree ) ):
             degree_list = [ int( degree[i] ) ] * num_elems
-            coeff, node_coords, ien_array = approx.computeSolution( target_fun = target_fun, domain = domain, degree = degree_list )
-            fit_error, residual = approx.computeFitError( target_fun = target_fun, coeff = coeff, node_coords = node_coords, ien_array = ien_array, eval_basis = basis.evalLagrangeBasis1D )
+            coeff, node_coords, ien_array = approxInterp.computeSolution( target_fun = target_fun, domain = domain, degree = degree_list )
+            fit_error, residual = approxInterp.computeFitError( target_fun = target_fun, coeff = coeff, node_coords = node_coords, ien_array = ien_array, eval_basis = basis.evalLagrangeBasis1D )
             error.append( fit_error )
         error_log10 = numpy.log10( error )
         degree_log10 = numpy.log10( degree )
