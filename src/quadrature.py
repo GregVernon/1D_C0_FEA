@@ -10,6 +10,14 @@ elif __name__ == "quadrature":
     import basis
     import momentFitting
 
+def quad( fun, domain, num_points ):
+    jacobian = ( domain[1] - domain[0] ) / ( 1 - (-1) )
+    x_qp, w_qp = getGaussLegendreQuadrature( num_points )
+    integral = 0.0
+    for i in range( 0, len( x_qp ) ):
+        integral += jacobian * ( fun( x_qp[i] ) * w_qp[i] )
+    return integral
+
 def getGaussLegendreQuadrature( num_points ):
     if num_points == 1:
         x = [ 0.0 ]
