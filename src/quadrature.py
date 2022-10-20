@@ -59,7 +59,8 @@ def getGaussLegendreQuadrature( num_points ):
               ( 322.0 + 13.0 * math.sqrt( 70.0 ) ) / 900.0,
               ( 322.0 - 13.0 * math.sqrt( 70.0 ) ) / 900.0, ]
     elif num_points > 5:
-        momentFitting.computeQuadrature( num_points, [-1, 1], basis.evalLegendreBasis1D )
+        # x, w = momentFitting.computeQuadrature( num_points, [-1, 1], basis.evalLegendreBasis1D )
+        x, w = computeGaussLegendreQuadratureRule( num_points )
     else:
         raise( Exception( "num_points_MUST_BE_POSITIVE_INTEGER" ) )
     return x, w
@@ -77,6 +78,8 @@ def computeGaussLegendreQuadratureRule( num_points ):
         for col in range( 0, len( r ) ):
             E[ row, col ] = p.subs( x, r[ col ] )
     w = list( E.LUsolve( M ) )
+    r = [ float(val) for val in r ]
+    w = [ float(val) for val in w ]
     return r, w
 
 def getRiemannQuadrature( num_points ):
