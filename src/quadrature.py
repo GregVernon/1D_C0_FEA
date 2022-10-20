@@ -5,8 +5,10 @@ import numpy
 
 if __name__ == "src.quadrature":
     from src import basis
+    from src import momentFitting
 elif __name__ == "quadrature":
     import basis
+    import momentFitting
 
 def getGaussLegendreQuadrature( num_points ):
     if num_points == 1:
@@ -48,8 +50,10 @@ def getGaussLegendreQuadrature( num_points ):
                 128.0 / 225.0,
               ( 322.0 + 13.0 * math.sqrt( 70.0 ) ) / 900.0,
               ( 322.0 - 13.0 * math.sqrt( 70.0 ) ) / 900.0, ]
+    elif num_points > 5:
+        momentFitting.computeQuadrature( n, [-1, 1], basis.evalLegendreBasis1D )
     else:
-        raise( Exception( "num_points_MUST_BE_INTEGER_IN_[1-5]" ) )
+        raise( Exception( "num_points_MUST_BE_POSITIVE_INTEGER" ) )
     return x, w
 
 def computeGaussLegendreQuadratureRule( num_points ):
@@ -224,16 +228,12 @@ class Test_getGaussLegendreQuadrature( unittest.TestCase ):
     def test_num_points_out_of_range( self ):
         with self.assertRaises( Exception ) as context:
             getGaussLegendreQuadrature( num_points = 0 )
-        self.assertEqual( "num_points_MUST_BE_INTEGER_IN_[1-5]", str( context.exception ) )
-    
-        with self.assertRaises( Exception ) as context:
-            getGaussLegendreQuadrature( num_points = 6 )
-        self.assertEqual( "num_points_MUST_BE_INTEGER_IN_[1-5]", str( context.exception ) )
+        self.assertEqual( "num_points_MUST_BE_POSITIVE_INTEGER", str( context.exception ) )
     
     def test_num_points_non_int_float( self ):
         with self.assertRaises( Exception ) as context:
             getGaussLegendreQuadrature( num_points = 3.5 )
-        self.assertEqual( "num_points_MUST_BE_INTEGER_IN_[1-5]", str( context.exception ) )
+        self.assertEqual( "num_points_MUST_BE_POSITIVE_INTEGER", str( context.exception ) )
     
     def test_num_points_int_float( self ):
         x, w = getGaussLegendreQuadrature( num_points = 4.0 )
