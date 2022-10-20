@@ -90,6 +90,22 @@ def rootsLegendreBasis( degree ):
     roots.sort()
     return roots
 
+def eigenvaluesLegendreBasis( degree ):
+    poly_fun = sympy.poly( symLegendreBasis( degree )[0] )
+    comp_matrix = computeCompanionMatrix( poly_fun )
+    eig_vals = numpy.sort( numpy.linalg.eigvals( comp_matrix ) )
+    return eig_vals
+
+def computeCompanionMatrix( poly_fun ):
+    coeffs = poly_fun.all_coeffs()
+    coeffs.reverse()
+    coeffs = [ float( val / coeffs[-1] ) for val in coeffs ]
+    coeffs = numpy.array( coeffs[0:-1] )
+    comp_matrix = numpy.zeros( shape = ( len( coeffs ) , len( coeffs ) ) )
+    comp_matrix[:,-1] = -1 * coeffs
+    comp_matrix[1:, 0:-1] = numpy.eye( ( len( coeffs ) - 1 ) )
+    return comp_matrix
+
 class Test_affine_mapping_1D( unittest.TestCase ):
     def test_unit_to_biunit( self ):
         unit_domain = numpy.array( [ 0.0, 1.0 ] )
