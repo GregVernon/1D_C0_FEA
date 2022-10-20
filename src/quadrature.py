@@ -2,6 +2,7 @@ import unittest
 import math
 import sympy
 import numpy
+import joblib
 
 if __name__ == "src.quadrature":
     from src import basis
@@ -18,6 +19,7 @@ def quad( fun, domain, num_points ):
         integral += jacobian * ( fun( x_qp[i] ) * w_qp[i] )
     return integral
 
+@joblib.Memory("cachedir").cache()
 def getGaussLegendreQuadrature( num_points ):
     if num_points == 1:
         x = [ 0.0 ]
