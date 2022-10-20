@@ -32,7 +32,7 @@ def assembleForceVector( target_fun, domain, degree, solution_basis ):
     err = float("inf")
     prev_force_vector = err * numpy.ones( shape = ( degree + 1 ) )
     num_qp = 0
-    tol = 1e-14
+    tol = 1e-9
     while err > tol:
         force_vector = numpy.zeros( shape = ( degree + 1 ) )
         num_qp += 1
@@ -58,3 +58,9 @@ class Test_computeSolution( unittest.TestCase ):
         gold_sol_coeff = numpy.array( [ (12*(numpy.pi**2 - 10))/(numpy.pi**3), -(6*(3*numpy.pi**2 - 40))/(numpy.pi**3), (12*(numpy.pi**2 - 10))/(numpy.pi**3)] )
         self.assertTrue( numpy.allclose( gold_sol_coeff, test_sol_coeff ) )
         
+    def test_erfc_target( self ):
+        target_fun = lambda x: scipy.special.erfc( x )
+        test_sol_coeff = computeSolution( target_fun = target_fun, domain = [-2, 2], degree = 3, solution_basis = basis.evalBernsteinBasis1D )
+        gold_sol_coeff = numpy.array( [ 1.8962208131568558391841630949727, 2.6917062016799657617278998883219, -0.69170620167996576172789988832194, 0.10377918684314416081583690502732] )
+        self.assertTrue( numpy.allclose( gold_sol_coeff, test_sol_coeff ) )
+    
