@@ -59,7 +59,7 @@ def getGaussLegendreQuadrature( num_points ):
               ( 322.0 + 13.0 * math.sqrt( 70.0 ) ) / 900.0,
               ( 322.0 - 13.0 * math.sqrt( 70.0 ) ) / 900.0, ]
     elif num_points > 5:
-        momentFitting.computeQuadrature( n, [-1, 1], basis.evalLegendreBasis1D )
+        momentFitting.computeQuadrature( num_points, [-1, 1], basis.evalLegendreBasis1D )
     else:
         raise( Exception( "num_points_MUST_BE_POSITIVE_INTEGER" ) )
     return x, w
