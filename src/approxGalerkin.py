@@ -30,7 +30,7 @@ def assembleGramMatrix( domain, degree, solution_basis ):
 
 def assembleForceVector( target_fun, domain, degree, solution_basis ):
     err = float("inf")
-    prev_force_vector = err * numpy.zeros( shape = ( degree + 1 ) )
+    prev_force_vector = err * numpy.ones( shape = ( degree + 1 ) )
     num_qp = 0
     tol = 1e-14
     while err > tol:
