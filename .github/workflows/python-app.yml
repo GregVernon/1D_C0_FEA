@@ -43,3 +43,4 @@ jobs:
         python -m unittest src/plotting.py
         python -m unittest src/approxInterp.py
         python -m unittest src/momentFitting.py
+        python -m unittest src/approxGalerkin.py
