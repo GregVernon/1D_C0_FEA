@@ -94,7 +94,8 @@ def evalSymLegendreBasis( degree, variate ):
 def rootsLegendreBasis( degree ):
     if ( degree <= 0 ):
         raise Exception( "DEGREE_MUST_BE_NATURAL_NUMBER" )
-    p, x = symLegendreBasis( degree )
+    p = symLegendreBasis( degree )
+    x = list( p.atoms( sympy.Symbol ) )[0]
     roots = sympy.roots( p, x )
     roots = list( roots.keys() )
     roots.sort()
@@ -322,19 +323,21 @@ class Test_evalLegendreBasis1D( unittest.TestCase ):
 
 class Test_symLegendreBasis( unittest.TestCase ):
     def test_get_symbol( self ):
-        p, x = symLegendreBasis( 2 )
-        self.assertEqual( first = x, second = sympy.symbols( 'x' ) )
+        p = symLegendreBasis( 2 )
+        x = list( p.atoms( sympy.Symbol ) )[0]
+        self.assertEqual( first = x, second = sympy.symbols( 'x', real = True  ) )
     
     def test_orthogonality( self ):
         max_degree = 4
         for degree_1 in range( 0, max_degree ):
-            p1, x = symLegendreBasis( degree_1 )
+            p1 = symLegendreBasis( degree_1 )
+            x = list( p1.atoms( sympy.Symbol ) )[0]
             for degree_2 in range( 0, max_degree ):
-                p2, _ = symLegendreBasis( degree_2 )
+                p2 = symLegendreBasis( degree_2 )
                 if ( degree_1 == degree_2 ):
-                    self.assertTrue( sympy.integrate( p1 * p2, ( x, -1, 1) ) != 0 )
+                    self.assertTrue( sympy.integrate( p1.as_expr() * p2.as_expr(), ( x, -1, 1) ) != 0 )
                 else:
-                    self.assertAlmostEqual( first = sympy.integrate( p1 * p2, ( x, -1, 1) ), second = 0, delta = 1e-12 )
+                    self.assertAlmostEqual( first = sympy.integrate( p1.as_expr() * p2.as_expr(), ( x, -1, 1) ), second = 0, delta = 1e-12 )
 
 class Test_rootsLegendreBasis( unittest.TestCase ):  
     def test_non_natural_number( self ):
