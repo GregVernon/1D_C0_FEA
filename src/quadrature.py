@@ -15,8 +15,8 @@ def quad( fun, domain, num_points ):
     jacobian = ( domain[1] - domain[0] ) / ( 1 - (-1) )
     x_qp, w_qp = getGaussLegendreQuadrature( num_points )
     integral = 0.0
-    for i in range( 0, len( x_qp ) ):
-        integral += jacobian * ( fun( x_qp[i] ) * w_qp[i] )
+    for qp in range( 0, len( x_qp ) ):
+        integral += ( fun( x_qp[qp] ) * w_qp[qp] ) * jacobian
     return integral
 
 @joblib.Memory("cachedir").cache()
