@@ -75,12 +75,14 @@ def computeGaussLegendreQuadratureRule( num_points ):
     r = basis.rootsLegendreBasis( num_points )
     M = sympy.zeros( rows = num_points, cols = 1 )
     for row in range( 0, num_points ):
-        p, x = basis.symLegendreBasis( row )
-        M[ row ] = sympy.integrate( p, (x, -1, +1 ) )
+        p = basis.symLegendreBasis( row )
+        x = list( p.atoms( sympy.Symbol ) )[0]
+        M[ row ] = sympy.integrate( p.as_expr(), (x, -1, +1 ) )
 
     E = sympy.zeros( rows = num_points, cols = num_points )
     for row in range( 0, num_points ):
-        p, x = basis.symLegendreBasis( row )
+        p = basis.symLegendreBasis( row )
+        x = list( p.atoms( sympy.Symbol ) )[0]
         for col in range( 0, len( r ) ):
             E[ row, col ] = p.subs( x, r[ col ] )
     w = list( E.LUsolve( M ) )
