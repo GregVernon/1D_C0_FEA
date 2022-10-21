@@ -45,6 +45,13 @@ def assembleForceVector( target_fun, domain, degree, solution_basis ):
         prev_force_vector = force_vector
     return force_vector
 
+def evaluateSolutionAt( x, domain, coeff, solution_basis ):
+    xi = basis.affine_mapping_1D( domain, [0, 1], x )
+    degree = len( coeff ) - 1
+    y = 0.0
+    for n in range( 0, len( coeff ) ):
+        y += coeff[n] * solution_basis( degree = degree, basis_idx = n, variate = xi )
+    return y
 class Test_computeSolution( unittest.TestCase ):
     def test_polynomial_target( self ):
         target_fun = lambda x: x**3 - (8/5)*x**2 + (3/5)*x
