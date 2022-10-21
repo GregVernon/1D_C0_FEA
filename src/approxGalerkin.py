@@ -41,7 +41,7 @@ def assembleForceVector( target_fun, domain, degree, solution_basis ):
             integrand = lambda x: Ni( x ) * target_fun( basis.affine_mapping_1D( [-1, 1], domain, x ) )
             force_vector[i] += quadrature.quad( integrand, domain, num_qp )
         if num_qp > 1:
-            err = numpy.linalg.norm( prev_force_vector - force_vector )
+            err = numpy.linalg.norm( prev_force_vector - force_vector ) / numpy.linalg.norm( prev_force_vector, 1 )
         prev_force_vector = force_vector
     return force_vector
 
