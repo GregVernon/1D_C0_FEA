@@ -86,7 +86,7 @@ def symLegendreBasis( degree ):
 
 def evalSymLegendreBasis( degree, variate ):
     p = symLegendreBasis( degree )
-    basis_val = numpy.real( sympy.N( p( variate ) ) )
+    basis_val = float( numpy.real( sympy.N( p( variate ) ) ) )
     return basis_val
 
 def rootsLegendreBasis( degree ):
