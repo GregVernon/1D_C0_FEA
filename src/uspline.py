@@ -8,7 +8,7 @@ if __name__ == "CubitPythonInterpreter_2":
 else:
     sys.path.append("/opt/Coreform-Cubit-2022.10/bin")
     import cubit
-    cubit.init([])
+    cubit.init(["cubit", "-nog"])
 
 ## MAIN FUNCTION
 def make_uspline_mesh( spline_space, filename ):
