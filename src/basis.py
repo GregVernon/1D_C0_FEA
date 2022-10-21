@@ -104,6 +104,7 @@ def eigenvaluesLegendreBasis( degree ):
     poly_fun = sympy.poly( symLegendreBasis( degree ) )
     comp_matrix = computeCompanionMatrix( poly_fun )
     eig_vals = numpy.sort( numpy.linalg.eigvals( comp_matrix ) )
+    eig_vals = [ float( numpy.real( val ) ) for val in eig_vals ]
     return eig_vals
 
 def computeCompanionMatrix( poly_fun ):
