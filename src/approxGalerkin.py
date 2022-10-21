@@ -107,4 +107,15 @@ class Test_computeSolution( unittest.TestCase ):
         # plotCompareGoldTestSolution( gold_sol_coeff, test_sol_coeff, [-2, 2], solution_basis )
         self.assertAlmostEqual( first = fit_err, second = 0, delta = 1e-4 )
     
+    def test_exptx_target( self ):
+        # print( "EXPT TEST" )
+        target_fun = lambda x: float( numpy.real( float( x )**float( x ) ) )
+        domain = [ -1, 1 ]
+        degree = 5
+        solution_basis = basis.evalBernsteinBasis1D
+        test_sol_coeff = computeSolution( target_fun = target_fun, domain = domain, degree = degree, solution_basis = solution_basis )
+        gold_sol_coeff = ( [ -0.74841381974620419634327921170757, -3.4222814978197825394922980704166, 7.1463655364038831935841354617843, -2.9824200396151998304868767455064, 1.6115460899636204992283970407553, 0.87876479932866366847320748048494 ] )
+        fit_err = computeFitError( gold_sol_coeff, test_sol_coeff, domain, solution_basis )
+        # plotCompareGoldTestSolution( gold_sol_coeff, test_sol_coeff, [-1, 1], solution_basis )
+        self.assertAlmostEqual( first = fit_err, second = 0, delta = 1e-2 )
     
