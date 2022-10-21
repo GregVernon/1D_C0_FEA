@@ -71,6 +71,17 @@ def plotCompareGoldTestSolution( gold_coeff, test_coeff, domain, solution_basis 
     plt.plot( x, yt )
     plt.show()
 
+def plotCompareFunToTestSolution( fun, test_coeff, domain, solution_basis ):
+    x = numpy.linspace( domain[0], domain[1], 1000 )
+    y = numpy.zeros( 1000 )
+    yt = numpy.zeros( 1000 )
+    for i in range(0, len(x) ):
+        y[i] = fun( x[i] )
+        yt[i] = evaluateSolutionAt( x[i], domain, test_coeff, solution_basis )
+    plt.plot( x, y )
+    plt.plot( x, yt )
+    plt.show()
+
 class Test_computeSolution( unittest.TestCase ):
     def test_cubic_polynomial_target( self ):
         # print( "POLY TEST" )
@@ -82,6 +93,7 @@ class Test_computeSolution( unittest.TestCase ):
         gold_sol_coeff = numpy.array( [ 1.0 / 20.0, 1.0 / 20.0, -1.0 / 20.0 ] )
         fit_err = computeFitError( gold_sol_coeff, test_sol_coeff, domain, solution_basis )
         # plotCompareGoldTestSolution( gold_sol_coeff, test_sol_coeff, domain, solution_basis )
+        # plotCompareFunToTestSolution( target_fun, test_sol_coeff, domain, solution_basis )
         self.assertTrue( numpy.allclose( gold_sol_coeff, test_sol_coeff ) )
         self.assertAlmostEqual( first = fit_err, second = 0, delta = 1e-12 )
 
@@ -95,6 +107,7 @@ class Test_computeSolution( unittest.TestCase ):
         gold_sol_coeff = numpy.array( [ (12*(numpy.pi**2 - 10))/(numpy.pi**3), -(6*(3*numpy.pi**2 - 40))/(numpy.pi**3), (12*(numpy.pi**2 - 10))/(numpy.pi**3)] )
         fit_err = computeFitError( gold_sol_coeff, test_sol_coeff, domain, solution_basis )
         # plotCompareGoldTestSolution( gold_sol_coeff, test_sol_coeff, [0, 1], solution_basis )
+        # plotCompareFunToTestSolution( target_fun, test_sol_coeff, domain, solution_basis )
         self.assertAlmostEqual( first = fit_err, second = 0, delta = 1e-5 )
         
     def test_erfc_target( self ):
@@ -107,6 +120,7 @@ class Test_computeSolution( unittest.TestCase ):
         gold_sol_coeff = numpy.array( [ 1.8962208131568558391841630949727, 2.6917062016799657617278998883219, -0.69170620167996576172789988832194, 0.10377918684314416081583690502732] )
         fit_err = computeFitError( gold_sol_coeff, test_sol_coeff, domain, solution_basis )
         # plotCompareGoldTestSolution( gold_sol_coeff, test_sol_coeff, [-2, 2], solution_basis )
+        # plotCompareFunToTestSolution( target_fun, test_sol_coeff, domain, solution_basis )
         self.assertAlmostEqual( first = fit_err, second = 0, delta = 1e-4 )
     
     def test_exptx_target( self ):
@@ -119,5 +133,6 @@ class Test_computeSolution( unittest.TestCase ):
         gold_sol_coeff = ( [ -0.74841381974620419634327921170757, -3.4222814978197825394922980704166, 7.1463655364038831935841354617843, -2.9824200396151998304868767455064, 1.6115460899636204992283970407553, 0.87876479932866366847320748048494 ] )
         fit_err = computeFitError( gold_sol_coeff, test_sol_coeff, domain, solution_basis )
         # plotCompareGoldTestSolution( gold_sol_coeff, test_sol_coeff, [-1, 1], solution_basis )
+        # plotCompareFunToTestSolution( target_fun, test_sol_coeff, domain, solution_basis )
         self.assertAlmostEqual( first = fit_err, second = 0, delta = 1e-2 )
     
