@@ -73,13 +73,21 @@ def evalLegendreBasis1D( degree, variate ):
     return basis_val 
 
 def symLegendreBasis( degree ):
-    x = sympy.symbols( 'x' )
-    term_1 = 1.0 / ( ( 2.0 ** degree ) * sympy.factorial( degree ) )
-    term_2 = ( ( x**2) - 1.0 ) ** degree 
-    term_3 = sympy.diff( term_2, x, degree )
-    p = term_1 * term_3
-    p = sympy.simplify( p )
-    return p, x
+    x = sympy.symbols( 'x', real = True )
+    if degree == 0:
+        p = sympy.Poly( 1, x )
+    else:
+        term_1 = 1.0 / ( ( 2.0 ** degree ) * sympy.factorial( degree ) )
+        term_2 = ( ( x**2) - 1.0 ) ** degree 
+        term_3 = sympy.diff( term_2, x, degree )
+        p = term_1 * term_3
+        p = sympy.poly( sympy.simplify( p ) )
+    return p
+
+def evalSymLegendreBasis( degree, variate ):
+    p = symLegendreBasis( degree )
+    basis_val = numpy.real( sympy.N( p( variate ) ) )
+    return basis_val
 
 def rootsLegendreBasis( degree ):
     if ( degree <= 0 ):
@@ -91,7 +99,7 @@ def rootsLegendreBasis( degree ):
     return roots
 
 def eigenvaluesLegendreBasis( degree ):
-    poly_fun = sympy.poly( symLegendreBasis( degree )[0] )
+    poly_fun = sympy.poly( symLegendreBasis( degree ) )
     comp_matrix = computeCompanionMatrix( poly_fun )
     eig_vals = numpy.sort( numpy.linalg.eigvals( comp_matrix ) )
     return eig_vals
