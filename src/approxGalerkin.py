@@ -32,8 +32,8 @@ def assembleForceVector( target_fun, domain, degree, solution_basis ):
     err = float("inf")
     prev_force_vector = err * numpy.ones( shape = ( degree + 1 ) )
     num_qp = 0
-    tol = 1e-9
-    while err > tol:
+    tol = 1e-5
+    while ( err > tol ) and ( num_qp <= 15 ):
         force_vector = numpy.zeros( shape = ( degree + 1 ) )
         num_qp += 1
         for i in range( 0, degree + 1 ):
