@@ -58,6 +58,17 @@ def computeFitError( gold_coeff, test_coeff, domain, solution_basis ):
     abs_err, _ = scipy.integrate.quad( err_fun, domain[0], domain[1], epsrel = 1e-12, limit = 1000 )
     return abs_err
 
+def plotCompareGoldTestSolution( gold_coeff, test_coeff, domain, solution_basis ):
+    x = numpy.linspace( domain[0], domain[1], 1000 )
+    yg = numpy.zeros( 1000 )
+    yt = numpy.zeros( 1000 )
+    for i in range(0, len(x) ):
+        yg[i] = evaluateSolutionAt( x[i], domain, gold_coeff, solution_basis )
+        yt[i] = evaluateSolutionAt( x[i], domain, test_coeff, solution_basis )
+    plt.plot( x, yg )
+    plt.plot( x, yt )
+    plt.show()
+
 class Test_computeSolution( unittest.TestCase ):
     def test_polynomial_target( self ):
         target_fun = lambda x: x**3 - (8/5)*x**2 + (3/5)*x
