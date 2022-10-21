@@ -1,6 +1,8 @@
 import unittest
 import numpy
 import scipy
+import matplotlib
+import matplotlib.pyplot as plt
 
 if __name__ == "src.approxGalerkin":
     from src import basis
