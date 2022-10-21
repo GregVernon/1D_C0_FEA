@@ -52,6 +52,12 @@ def evaluateSolutionAt( x, domain, coeff, solution_basis ):
     for n in range( 0, len( coeff ) ):
         y += coeff[n] * solution_basis( degree = degree, basis_idx = n, variate = xi )
     return y
+
+def computeFitError( gold_coeff, test_coeff, domain, solution_basis ):
+    err_fun = lambda x: abs( evaluateSolutionAt( x, domain, gold_coeff, solution_basis ) - evaluateSolutionAt( x, domain, test_coeff, solution_basis ) )
+    abs_err, _ = scipy.integrate.quad( err_fun, domain[0], domain[1], epsrel = 1e-12, limit = 1000 )
+    return abs_err
+
 class Test_computeSolution( unittest.TestCase ):
     def test_polynomial_target( self ):
         target_fun = lambda x: x**3 - (8/5)*x**2 + (3/5)*x
