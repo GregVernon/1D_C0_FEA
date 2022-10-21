@@ -2,6 +2,7 @@ import unittest
 import math
 import numpy
 import sympy
+import joblib
 
 def affine_mapping_1D( domain, target_domain, x ):
     A = numpy.array( [ [ 1.0, domain[0] ], [ 1.0, domain[1] ] ] )
@@ -72,6 +73,7 @@ def evalLegendreBasis1D( degree, variate ):
         basis_val = ( term_1 - term_2 ) / ( i + 1 )
     return basis_val 
 
+@joblib.Memory("cachedir").cache()
 def symLegendreBasis( degree ):
     x = sympy.symbols( 'x', real = True )
     if degree == 0:
