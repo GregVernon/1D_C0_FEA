@@ -192,7 +192,12 @@ class Test_assembleGramMatrix( unittest.TestCase ):
         test_gram_matrix = assembleGramMatrix( domain = [0, 1], degree = 3, solution_basis = basis.evalLegendreBasis1D )
         gold_gram_matrix = numpy.array( [ [1.0, 0.0, 0.0, 0.0], [0.0, 1.0/3.0, 0.0, 0.0], [0.0, 0.0, 0.2, 0.0], [ 0.0, 0.0, 0.0, 1.0/7.0] ] )
         self.assertTrue( numpy.allclose( test_gram_matrix, gold_gram_matrix ) )
-    
+
+    def test_linear_bernstein( self ):
+        test_gram_matrix = assembleGramMatrix( domain = [0, 1], degree = 1, solution_basis = basis.evalBernsteinBasis1D )
+        gold_gram_matrix = numpy.array( [ [1.0/3.0, 1.0/6.0], [1.0/6.0, 1.0/3.0] ] )
+        self.assertTrue( numpy.allclose( test_gram_matrix, gold_gram_matrix ) )
+
     def test_quadratic_bernstein( self ):
         test_gram_matrix = assembleGramMatrix( domain = [0, 1], degree = 2, solution_basis = basis.evalBernsteinBasis1D )
         gold_gram_matrix = numpy.array( [ [0.2, 0.1, 1.0/30.0], [0.1, 2.0/15.0, 0.1], [1.0/30.0, 0.1, 0.2] ] )
@@ -201,6 +206,11 @@ class Test_assembleGramMatrix( unittest.TestCase ):
     def test_cubic_bernstein( self ):
         test_gram_matrix = assembleGramMatrix( domain = [0, 1], degree = 3, solution_basis = basis.evalBernsteinBasis1D )
         gold_gram_matrix = numpy.array( [ [1.0/7.0, 1.0/14.0, 1.0/35.0, 1.0/140.0], [1.0/14.0, 3.0/35.0, 9.0/140.0, 1.0/35.0], [1.0/35.0, 9.0/140.0, 3.0/35.0, 1.0/14.0], [ 1.0/140.0, 1.0/35.0, 1.0/14.0, 1.0/7.0] ] )
+        self.assertTrue( numpy.allclose( test_gram_matrix, gold_gram_matrix ) )
+
+    def test_linear_lagrange( self ):
+        test_gram_matrix = assembleGramMatrix( domain = [0, 1], degree = 1, solution_basis = basis.evalLagrangeBasis1D )
+        gold_gram_matrix = numpy.array( [ [1.0/3.0, 1.0/6.0], [1.0/6.0, 1.0/3.0] ] )
         self.assertTrue( numpy.allclose( test_gram_matrix, gold_gram_matrix ) )
 
     def test_quadratic_lagrange( self ):
@@ -212,3 +222,58 @@ class Test_assembleGramMatrix( unittest.TestCase ):
         test_gram_matrix = assembleGramMatrix( domain = [0, 1], degree = 3, solution_basis = basis.evalLagrangeBasis1D )
         gold_gram_matrix = numpy.array( [ [8.0/105.0, 33.0/560.0, -3.0/140.0, 19.0/1680.0], [33.0/560.0, 27.0/70.0, -27.0/560.0, -3.0/140.0], [-3.0/140.0, -27.0/560.0, 27.0/70.0, 33/560.0], [ 19.0/1680.0, -3.0/140.0, 33.0/560.0, 8.0/105.0] ] )
         self.assertTrue( numpy.allclose( test_gram_matrix, gold_gram_matrix ) )
+
+class Test_assembleForceVector( unittest.TestCase ):
+    def test_legendre_const_force_fun( self ):
+        test_force_vector = assembleForceVector( target_fun = lambda x: numpy.pi, domain = [0, 1], degree = 1, solution_basis = basis.evalLegendreBasis1D )
+        gold_force_vector = numpy.array( [ numpy.pi, 0.0 ] )
+        self.assertTrue( numpy.allclose( test_force_vector, gold_force_vector ) )
+    
+    def test_legendre_linear_force_fun( self ):
+        test_force_vector = assembleForceVector( target_fun = lambda x: 2*x + numpy.pi, domain = [0, 1], degree = 1, solution_basis = basis.evalLegendreBasis1D )
+        gold_force_vector = numpy.array( [ numpy.pi + 1.0, 1.0/3.0 ] )
+        self.assertTrue( numpy.allclose( test_force_vector, gold_force_vector ) )
+    
+    def test_legendre_quadratic_force_fun( self ):
+        test_force_vector = assembleForceVector( target_fun = lambda x: x**2.0, domain = [0, 1], degree = 1, solution_basis = basis.evalLegendreBasis1D )
+        gold_force_vector = numpy.array( [ 1.0/3.0, 1.0/6.0 ] )
+        self.assertTrue( numpy.allclose( test_force_vector, gold_force_vector ) )
+        test_force_vector = assembleForceVector( target_fun = lambda x: x**2.0, domain = [0, 1], degree = 2, solution_basis = basis.evalLegendreBasis1D )
+        gold_force_vector = numpy.array( [ 1.0/3.0, 1.0/6.0, 1.0/30.0 ] )
+        self.assertTrue( numpy.allclose( test_force_vector, gold_force_vector ) )
+
+    def test_lagrange_const_force_fun( self ):
+        test_force_vector = assembleForceVector( target_fun = lambda x: numpy.pi, domain = [0, 1], degree = 1, solution_basis = basis.evalLagrangeBasis1D )
+        gold_force_vector = numpy.array( [ numpy.pi / 2.0, numpy.pi / 2.0 ] )
+        self.assertTrue( numpy.allclose( test_force_vector, gold_force_vector ) )
+    
+    def test_lagrange_linear_force_fun( self ):
+        test_force_vector = assembleForceVector( target_fun = lambda x: 2*x + numpy.pi, domain = [0, 1], degree = 1, solution_basis = basis.evalLagrangeBasis1D )
+        gold_force_vector = numpy.array( [ numpy.pi/2.0 + 1.0/3.0, numpy.pi/2.0 + 2.0/3.0 ] )
+        self.assertTrue( numpy.allclose( test_force_vector, gold_force_vector ) )
+    
+    def test_lagrange_quadratic_force_fun( self ):
+        test_force_vector = assembleForceVector( target_fun = lambda x: x**2.0, domain = [0, 1], degree = 1, solution_basis = basis.evalLagrangeBasis1D )
+        gold_force_vector = numpy.array( [ 1.0/12.0, 1.0/4.0 ] )
+        self.assertTrue( numpy.allclose( test_force_vector, gold_force_vector ) )
+        test_force_vector = assembleForceVector( target_fun = lambda x: x**2.0, domain = [0, 1], degree = 2, solution_basis = basis.evalLagrangeBasis1D )
+        gold_force_vector = numpy.array( [ -1.0/60.0, 1.0/5.0, 3.0/20.0 ] )
+        self.assertTrue( numpy.allclose( test_force_vector, gold_force_vector ) )
+
+    def test_bernstein_const_force_fun( self ):
+        test_force_vector = assembleForceVector( target_fun = lambda x: numpy.pi, domain = [0, 1], degree = 1, solution_basis = basis.evalBernsteinBasis1D )
+        gold_force_vector = numpy.array( [ numpy.pi / 2.0, numpy.pi / 2.0 ] )
+        self.assertTrue( numpy.allclose( test_force_vector, gold_force_vector ) )
+    
+    def test_bernstein_linear_force_fun( self ):
+        test_force_vector = assembleForceVector( target_fun = lambda x: 2*x + numpy.pi, domain = [0, 1], degree = 1, solution_basis = basis.evalBernsteinBasis1D )
+        gold_force_vector = numpy.array( [ numpy.pi/2.0 + 1.0/3.0, numpy.pi/2.0 + 2.0/3.0 ] )
+        self.assertTrue( numpy.allclose( test_force_vector, gold_force_vector ) )
+    
+    def test_bernstein_quadratic_force_fun( self ):
+        test_force_vector = assembleForceVector( target_fun = lambda x: x**2.0, domain = [0, 1], degree = 1, solution_basis = basis.evalBernsteinBasis1D )
+        gold_force_vector = numpy.array( [ 1.0/12.0, 1.0/4.0 ] )
+        self.assertTrue( numpy.allclose( test_force_vector, gold_force_vector ) )
+        test_force_vector = assembleForceVector( target_fun = lambda x: x**2.0, domain = [0, 1], degree = 2, solution_basis = basis.evalBernsteinBasis1D )
+        gold_force_vector = numpy.array( [ 1.0/30.0, 1.0/10.0, 1.0/5.0 ] )
+        self.assertTrue( numpy.allclose( test_force_vector, gold_force_vector ) )
