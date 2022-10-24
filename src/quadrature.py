@@ -64,9 +64,9 @@ def getGaussLegendreQuadrature( num_points ):
         # x, w = momentFitting.computeQuadrature( num_points, [-1, 1], basis.evalLegendreBasis1D )
         # x, w = computeGaussLegendreQuadratureRule( num_points )
         x = basis.eigenvaluesLegendreBasis( num_points )
-        M = momentFitting.computeMomentVector( num_points, [ -1, 1 ], basis.evalSymLegendreBasis )
-        A = momentFitting.assembleLinearMomentFitSystem( num_points, basis.evalSymLegendreBasis, x )
-        w = momentFitting.solveLinearMomentFit( M, basis.evalSymLegendreBasis, x )
+        M = momentFitting.computeMomentVector( num_points, basis.symLegendreBasis, [-1, 1] )
+        A = momentFitting.assembleLinearMomentFitSystem( num_points, basis.symLegendreBasis, [-1, 1], x )
+        w = momentFitting.solveLinearMomentFit( M, basis.symLegendreBasis, [-1, 1], x )
     else:
         raise( Exception( "num_points_MUST_BE_POSITIVE_INTEGER" ) )
     return x, w
@@ -74,15 +74,14 @@ def getGaussLegendreQuadrature( num_points ):
 def computeGaussLegendreQuadratureRule( num_points ):
     r = basis.rootsLegendreBasis( num_points )
     M = sympy.zeros( rows = num_points, cols = 1 )
+    x = sympy.symbols( 'x', real = True )
     for row in range( 0, num_points ):
-        p = basis.symLegendreBasis( row )
-        x = list( p.atoms( sympy.Symbol ) )[0]
+        p = basis.symLegendreBasis( row, row, [-1, 1], x )
         M[ row ] = sympy.integrate( p.as_expr(), (x, -1, +1 ) )
 
     E = sympy.zeros( rows = num_points, cols = num_points )
     for row in range( 0, num_points ):
-        p = basis.symLegendreBasis( row )
-        x = list( p.atoms( sympy.Symbol ) )[0]
+        p = basis.symLegendreBasis( row, row, [-1, 1], x )
         for col in range( 0, len( r ) ):
             E[ row, col ] = p.subs( x, r[ col ] )
     w = list( E.LUsolve( M ) )

@@ -78,7 +78,7 @@ def evalLegendreBasis1D( degree, basis_idx, domain, variate ):
     return basis_val 
 
 @joblib.Memory("cachedir").cache()
-def symLegendreBasis( degree ):
+def symLegendreBasis( degree, basis_idx, domain, variate ):
     x = sympy.symbols( 'x', real = True )
     if degree == 0:
         p = sympy.Poly( 1, x )
@@ -90,7 +90,8 @@ def symLegendreBasis( degree ):
         p = sympy.poly( sympy.simplify( p ) )
     return p
 
-def evalSymLegendreBasis( degree, variate ):
+def evalSymLegendreBasis( degree, basis_idx, domain, variate ):
+    variate = affine_mapping_1D( domain, [-1, 1], variate )
     p = symLegendreBasis( degree )
     basis_val = float( numpy.real( sympy.N( p( variate ) ) ) )
     return basis_val
@@ -98,15 +99,16 @@ def evalSymLegendreBasis( degree, variate ):
 def rootsLegendreBasis( degree ):
     if ( degree <= 0 ):
         raise Exception( "DEGREE_MUST_BE_NATURAL_NUMBER" )
-    p = symLegendreBasis( degree )
-    x = list( p.atoms( sympy.Symbol ) )[0]
+    x = sympy.symbols( 'x', real = True )
+    p = symLegendreBasis( degree, degree, [-1, 1], x )
     roots = sympy.roots( p, x )
     roots = list( roots.keys() )
     roots.sort()
     return roots
 
 def eigenvaluesLegendreBasis( degree ):
-    poly_fun = sympy.poly( symLegendreBasis( degree ) )
+    x = sympy.symbols( 'x', real = True )
+    poly_fun = sympy.poly( symLegendreBasis( degree, degree, [-1, 1], x ) )
     comp_matrix = computeCompanionMatrix( poly_fun )
     eig_vals = numpy.sort( numpy.linalg.eigvals( comp_matrix ) )
     eig_vals = [ float( numpy.real( val ) ) for val in eig_vals ]
@@ -327,17 +329,18 @@ class Test_evalLegendreBasis1D( unittest.TestCase ):
 
 class Test_symLegendreBasis( unittest.TestCase ):
     def test_get_symbol( self ):
-        p = symLegendreBasis( 2 )
-        x = list( p.atoms( sympy.Symbol ) )[0]
-        self.assertEqual( first = x, second = sympy.symbols( 'x', real = True  ) )
+        gold_x = sympy.symbols( 'x', real = True  )
+        p = symLegendreBasis( 2, 2, [-1, 1], gold_x )
+        test_x = list( p.atoms( sympy.Symbol ) )[0]
+        self.assertEqual( first = test_x, second =  gold_x )
     
     def test_orthogonality( self ):
         max_degree = 4
+        x = sympy.symbols( 'x', real = True  )
         for degree_1 in range( 0, max_degree ):
-            p1 = symLegendreBasis( degree_1 )
-            x = list( p1.atoms( sympy.Symbol ) )[0]
+            p1 = symLegendreBasis( degree_1, degree_1, [-1, 1], x )
             for degree_2 in range( 0, max_degree ):
-                p2 = symLegendreBasis( degree_2 )
+                p2 = symLegendreBasis( degree_2, degree_2, [-1, 1], x )
                 if ( degree_1 == degree_2 ):
                     self.assertTrue( sympy.integrate( p1.as_expr() * p2.as_expr(), ( x, -1, 1) ) != 0 )
                 else:
