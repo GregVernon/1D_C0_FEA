@@ -41,12 +41,11 @@ def evaluateSolutionAt( x, coeff, node_coords, ien_array, eval_basis ):
     elem_idx = mesh.getElementIdxContainingPoint( node_coords, ien_array, x )
     elem_nodes = ien_array[elem_idx]
     elem_domain = [ node_coords[ elem_nodes[0] ], node_coords[ elem_nodes[-1] ] ]
-    xi = mesh.spatialToParamCoords( x, elem_domain )
     degree = len( elem_nodes ) - 1
     y = 0.0
     for n in range( 0, len( elem_nodes ) ):
         curr_node = elem_nodes[n]
-        y += coeff[curr_node] * eval_basis( degree = degree, basis_idx = n, variate = xi )
+        y += coeff[curr_node] * eval_basis( degree = degree, basis_idx = n, domain = elem_domain, variate = x )
     return y
 
 def computeElementFitError( target_fun, coeff, node_coords, ien_array, elem_idx, eval_basis ):
