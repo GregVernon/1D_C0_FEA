@@ -21,12 +21,12 @@ def computeSolution( target_fun, domain, degree, solution_basis ):
 
 def assembleGramMatrix( domain, degree, solution_basis ):
     gram_matrix = numpy.zeros( shape = ( degree + 1, degree + 1 ) )
-    num_qp = int( numpy.ceil( ( degree**2 + 1 ) / 2.0 ) )
+    num_qp = int( numpy.ceil( ( 2*degree + 1 ) / 2.0 ) )
     for i in range( 0, degree + 1):
-        Ni = lambda x: solution_basis( degree, i, basis.affine_mapping_1D( [-1, 1], [0, 1], x ) )
+        Ni = lambda x: solution_basis( degree, i, [-1, 1], x )
         for j in range( 0, degree + 1 ):
-            Nj = lambda x: solution_basis( degree, j, basis.affine_mapping_1D( [-1, 1], [0, 1], x ) )
-            integrand = lambda x: Ni( x ) * Nj( x )
+            Nj = lambda x: solution_basis( degree, j, [-1, 1], x )
+            integrand = lambda x: Ni(x ) * Nj( x )
             gram_matrix[i,j] += quadrature.quad( integrand, domain, num_qp )
     return gram_matrix
 
@@ -39,7 +39,7 @@ def assembleForceVector( target_fun, domain, degree, solution_basis ):
         force_vector = numpy.zeros( shape = ( degree + 1 ) )
         num_qp += 1
         for i in range( 0, degree + 1 ):
-            Ni = lambda x: solution_basis( degree, i, basis.affine_mapping_1D( [-1, 1], [0, 1], x ) )
+            Ni = lambda x: solution_basis( degree, i, [-1, 1], x )
             integrand = lambda x: Ni( x ) * target_fun( basis.affine_mapping_1D( [-1, 1], domain, x ) )
             force_vector[i] += quadrature.quad( integrand, domain, num_qp )
         if num_qp > 1:
@@ -48,11 +48,10 @@ def assembleForceVector( target_fun, domain, degree, solution_basis ):
     return force_vector
 
 def evaluateSolutionAt( x, domain, coeff, solution_basis ):
-    xi = basis.affine_mapping_1D( domain, [0, 1], x )
     degree = len( coeff ) - 1
     y = 0.0
     for n in range( 0, len( coeff ) ):
-        y += coeff[n] * solution_basis( degree = degree, basis_idx = n, variate = xi )
+        y += coeff[n] * solution_basis( degree = degree, basis_idx = n, domain = domain, variate = x )
     return y
 
 def computeFitError( gold_coeff, test_coeff, domain, solution_basis ):
@@ -135,4 +134,56 @@ class Test_computeSolution( unittest.TestCase ):
         # plotCompareGoldTestSolution( gold_sol_coeff, test_sol_coeff, [-1, 1], solution_basis )
         # plotCompareFunToTestSolution( target_fun, test_sol_coeff, domain, solution_basis )
         self.assertAlmostEqual( first = fit_err, second = 0, delta = 1e-2 )
+
+class Test_evaluateSolutionAt( unittest.TestCase ):
+    def test_constant_bernstein( self ):
+        for x in numpy.arange( -1, 1, 7 ):
+            for coeff in numpy.arange( -1, 1, 7 ):
+                self.assertAlmostEqual( evaluateSolutionAt( x = x, domain = [-1.0, 1.0], coeff = numpy.array( [coeff] ), solution_basis = basis.evalBernsteinBasis1D ), coeff )
     
+    def test_linear_bernstein( self ):
+        coeff = numpy.array( [1.0, 2.0] )
+        self.assertAlmostEqual( evaluateSolutionAt( x = -1.0, domain = [-1.0, 1.0], coeff = coeff, solution_basis = basis.evalBernsteinBasis1D ), 1.0 )
+        self.assertAlmostEqual( evaluateSolutionAt( x =  0.0, domain = [-1.0, 1.0], coeff = coeff, solution_basis = basis.evalBernsteinBasis1D ), 1.5 )
+        self.assertAlmostEqual( evaluateSolutionAt( x = +1.0, domain = [-1.0, 1.0], coeff = coeff, solution_basis = basis.evalBernsteinBasis1D ), 2.0 )
+        self.assertAlmostEqual( evaluateSolutionAt( x =  0.0, domain = [0.0, 1.0], coeff = coeff, solution_basis = basis.evalBernsteinBasis1D ), 1.0 )
+        self.assertAlmostEqual( evaluateSolutionAt( x =  0.5, domain = [0.0, 1.0], coeff = coeff, solution_basis = basis.evalBernsteinBasis1D ), 1.5 )
+        self.assertAlmostEqual( evaluateSolutionAt( x =  1.0, domain = [0.0, 1.0], coeff = coeff, solution_basis = basis.evalBernsteinBasis1D ), 2.0 )
+    
+    def test_quadratic_bernstein( self ):
+        coeff = numpy.array( [1.0, 3.0, 2.0] )
+        self.assertAlmostEqual( evaluateSolutionAt( x = -1.0, domain = [-1.0, 1.0], coeff = coeff, solution_basis = basis.evalBernsteinBasis1D ), 1.0 )
+        self.assertAlmostEqual( evaluateSolutionAt( x =  0.0, domain = [-1.0, 1.0], coeff = coeff, solution_basis = basis.evalBernsteinBasis1D ), 9.0 / 4.0 )
+        self.assertAlmostEqual( evaluateSolutionAt( x = +1.0, domain = [-1.0, 1.0], coeff = coeff, solution_basis = basis.evalBernsteinBasis1D ), 2.0 )
+        self.assertAlmostEqual( evaluateSolutionAt( x =  0.0, domain = [0.0, 1.0], coeff = coeff, solution_basis = basis.evalBernsteinBasis1D ), 1.0 )
+        self.assertAlmostEqual( evaluateSolutionAt( x =  0.5, domain = [0.0, 1.0], coeff = coeff, solution_basis = basis.evalBernsteinBasis1D ), 9.0 / 4.0 )
+        self.assertAlmostEqual( evaluateSolutionAt( x =  1.0, domain = [0.0, 1.0], coeff = coeff, solution_basis = basis.evalBernsteinBasis1D ), 2.0 )
+
+    def test_constant_lagrange( self ):
+        for x in numpy.arange( -1, 1, 7 ):
+            for coeff in numpy.arange( -1, 1, 7 ):
+                self.assertAlmostEqual( evaluateSolutionAt( x = x, domain = [-1.0, 1.0], coeff = numpy.array( [coeff] ), solution_basis = basis.evalLagrangeBasis1D ), coeff )
+    
+    def test_linear_lagrange( self ):
+        coeff = numpy.array( [1.0, 2.0] )
+        self.assertAlmostEqual( evaluateSolutionAt( x = -1.0, domain = [-1.0, 1.0], coeff = coeff, solution_basis = basis.evalLagrangeBasis1D ), 1.0 )
+        self.assertAlmostEqual( evaluateSolutionAt( x =  0.0, domain = [-1.0, 1.0], coeff = coeff, solution_basis = basis.evalLagrangeBasis1D ), 1.5 )
+        self.assertAlmostEqual( evaluateSolutionAt( x = +1.0, domain = [-1.0, 1.0], coeff = coeff, solution_basis = basis.evalLagrangeBasis1D ), 2.0 )
+        self.assertAlmostEqual( evaluateSolutionAt( x =  0.0, domain = [0.0, 1.0], coeff = coeff, solution_basis = basis.evalLagrangeBasis1D ), 1.0 )
+        self.assertAlmostEqual( evaluateSolutionAt( x =  0.5, domain = [0.0, 1.0], coeff = coeff, solution_basis = basis.evalLagrangeBasis1D ), 1.5 )
+        self.assertAlmostEqual( evaluateSolutionAt( x =  1.0, domain = [0.0, 1.0], coeff = coeff, solution_basis = basis.evalLagrangeBasis1D ), 2.0 )
+    
+    def test_quadratic_lagrange( self ):
+        coeff = numpy.array( [1.0, 3.0, 2.0] )
+        self.assertAlmostEqual( evaluateSolutionAt( x = -1.0, domain = [-1.0, 1.0], coeff = coeff, solution_basis = basis.evalLagrangeBasis1D ), 1.0 )
+        self.assertAlmostEqual( evaluateSolutionAt( x =  0.0, domain = [-1.0, 1.0], coeff = coeff, solution_basis = basis.evalLagrangeBasis1D ), 3.0 )
+        self.assertAlmostEqual( evaluateSolutionAt( x = +1.0, domain = [-1.0, 1.0], coeff = coeff, solution_basis = basis.evalLagrangeBasis1D ), 2.0 )
+        self.assertAlmostEqual( evaluateSolutionAt( x =  0.0, domain = [0.0, 1.0], coeff = coeff, solution_basis = basis.evalLagrangeBasis1D ), 1.0 )
+        self.assertAlmostEqual( evaluateSolutionAt( x =  0.5, domain = [0.0, 1.0], coeff = coeff, solution_basis = basis.evalLagrangeBasis1D ), 3.0 )
+        self.assertAlmostEqual( evaluateSolutionAt( x =  1.0, domain = [0.0, 1.0], coeff = coeff, solution_basis = basis.evalLagrangeBasis1D ), 2.0 )
+
+class Test_assembleGramMatrix( unittest.TestCase ):
+    def test_quadratic_legendre( self ):
+        test_gram_matrix = assembleGramMatrix( domain = [0, 1], degree = 2, solution_basis = basis.evalLegendreBasis1D )
+        gold_gram_matrix = numpy.array( [ [1.0, 0.0, 0.0], [0.0, 1.0/3.0, 0.0], [0.0, 0.0, 0.2] ] )
+        self.assertTrue( numpy.allclose( test_gram_matrix, gold_gram_matrix ) )
