@@ -64,6 +64,12 @@ def evalBernsteinBasisDeriv( degree, basis_idx, deriv, domain, variate ):
             basis_val = evalBernsteinBasis1D( degree, basis_idx, domain, variate )
     return basis_val
 
+def evalSplineBasis1D( extraction_operator, basis_idx, domain, variate ):
+    degree = extraction_operator.shape[0]-1
+    N = evalBernsteinBasis1DVector( degree, domain, variate )
+    basis_val = numpy.matmul( extraction_operator, N )[basis_idx]
+    return basis_val
+
 def evalLegendreBasis1D( degree, basis_idx, domain, variate ):
     variate = affine_mapping_1D( domain, [-1, 1], variate )
     if ( basis_idx == 0 ):
