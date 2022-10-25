@@ -79,15 +79,17 @@ def computeElementFitError( target_fun, coeff, node_coords, ien_array, elem_idx,
     elem_nodes = ien_array[elem_idx]
     domain = [ node_coords[elem_nodes[0]], node_coords[elem_nodes[-1]] ]
     abs_err_fun = lambda x : abs( target_fun( x ) - evaluateSolutionAt( x, coeff, node_coords, ien_array, eval_basis ) )
-    fit_error, residual = scipy.integrate.quad( abs_err_fun, domain[0], domain[1], epsrel = 1e-12, limit = 100 )
-    return fit_error, residual
+    abs_error, residual = scipy.integrate.quad( abs_err_fun, domain[0], domain[1], epsrel = 1e-12, limit = 100 )
+    return abs_error, residual
 
 def computeFitError( target_fun, coeff, node_coords, ien_array, eval_basis ):
     num_elems = len( ien_array )
     domain = [ min( node_coords ), max( node_coords ) ]
+    target_fun_norm, _ = scipy.integrate.quad( lambda x: abs( target_fun(x) ), domain[0], domain[1], epsrel = 1e-12, limit = num_elems * 100 )
     abs_err_fun = lambda x : abs( target_fun( x ) - evaluateSolutionAt( x, coeff, node_coords, ien_array, eval_basis ) )
-    fit_error, residual = scipy.integrate.quad( abs_err_fun, domain[0], domain[1], epsrel = 1e-12, limit = num_elems * 100 )
-    return fit_error, residual
+    abs_error, residual = scipy.integrate.quad( abs_err_fun, domain[0], domain[1], epsrel = 1e-12, limit = num_elems * 100 )
+    rel_error = abs_error / target_fun_norm
+    return abs_error, rel_error
 
 def plotCompareGoldTestSolution( gold_coeff, test_coeff, domain, solution_basis ):
     x = numpy.linspace( domain[0], domain[1], 1000 )
@@ -119,12 +121,12 @@ class Test_computeSolution( unittest.TestCase ):
         degree = [2]*2
         solution_basis = basis.evalBernsteinBasis1D
         test_sol_coeff, node_coords, ien_array = computeSolution( target_fun = target_fun, domain = domain, degree = degree, solution_basis =solution_basis )
-        # gold_sol_coeff = numpy.array( [ 1.0 / 20.0, 1.0 / 20.0, -1.0 / 20.0 ] )
-        # fit_err = computeFitError( gold_sol_coeff, test_sol_coeff, domain, solution_basis )
+        gold_sol_coeff = numpy.array( [ 1.0 / 120.0, 9.0 / 80.0, 1.0 / 40.0, -1.0 / 16.0, -1.0 / 120.0 ] )
+        abs_err, rel_err = computeFitError( target_fun, test_sol_coeff, node_coords, ien_array, solution_basis )
         # plotCompareGoldTestSolution( gold_sol_coeff, test_sol_coeff, domain, solution_basis )
-        plotCompareFunToTestSolution( target_fun, test_sol_coeff, node_coords, ien_array, solution_basis )
-        # self.assertTrue( numpy.allclose( gold_sol_coeff, test_sol_coeff ) )
-        # self.assertAlmostEqual( first = fit_err, second = 0, delta = 1e-12 )
+        # plotCompareFunToTestSolution( target_fun, test_sol_coeff, node_coords, ien_array, solution_basis )
+        self.assertTrue( numpy.allclose( gold_sol_coeff, test_sol_coeff ) )
+        self.assertAlmostEqual( first = rel_err, second = 0, delta = 1e-1 )
 
     def test_sin_target( self ):
         # print( "SIN TEST" )
@@ -134,10 +136,10 @@ class Test_computeSolution( unittest.TestCase ):
         solution_basis = basis.evalBernsteinBasis1D
         test_sol_coeff, node_coords, ien_array = computeSolution( target_fun = target_fun, domain = domain, degree = degree, solution_basis = solution_basis )
         # gold_sol_coeff = numpy.array( [ (12*(numpy.pi**2 - 10))/(numpy.pi**3), -(6*(3*numpy.pi**2 - 40))/(numpy.pi**3), (12*(numpy.pi**2 - 10))/(numpy.pi**3)] )
-        # fit_err = computeFitError( gold_sol_coeff, test_sol_coeff, domain, solution_basis )
+        abs_err, rel_err = computeFitError( target_fun, test_sol_coeff, node_coords, ien_array, solution_basis )
         # plotCompareGoldTestSolution( gold_sol_coeff, test_sol_coeff, [0, 1], solution_basis )
-        plotCompareFunToTestSolution( target_fun, test_sol_coeff, node_coords, ien_array, solution_basis )
-        # self.assertAlmostEqual( first = fit_err, second = 0, delta = 1e-5 )
+        # plotCompareFunToTestSolution( target_fun, test_sol_coeff, node_coords, ien_array, solution_basis )
+        self.assertAlmostEqual( first = rel_err, second = 0, delta = 1e-1 )
         
     def test_erfc_target( self ):
         # print( "ERFC TEST" )
@@ -147,10 +149,10 @@ class Test_computeSolution( unittest.TestCase ):
         solution_basis = basis.evalBernsteinBasis1D
         test_sol_coeff, node_coords, ien_array = computeSolution( target_fun = target_fun, domain = domain, degree = degree, solution_basis = solution_basis )
         # gold_sol_coeff = numpy.array( [ 1.8962208131568558391841630949727, 2.6917062016799657617278998883219, -0.69170620167996576172789988832194, 0.10377918684314416081583690502732] )
-        # fit_err = computeFitError( gold_sol_coeff, test_sol_coeff, domain, solution_basis )
+        abs_err, rel_err = computeFitError( target_fun, test_sol_coeff, node_coords, ien_array, solution_basis )
         # plotCompareGoldTestSolution( gold_sol_coeff, test_sol_coeff, [-2, 2], solution_basis )
-        plotCompareFunToTestSolution( target_fun, test_sol_coeff, node_coords, ien_array, solution_basis )
-        # self.assertAlmostEqual( first = fit_err, second = 0, delta = 1e-4 )
+        # plotCompareFunToTestSolution( target_fun, test_sol_coeff, node_coords, ien_array, solution_basis )
+        self.assertAlmostEqual( first = rel_err, second = 0, delta = 1e-2 )
     
     def test_exptx_target( self ):
         # print( "EXPT TEST" )
@@ -160,10 +162,10 @@ class Test_computeSolution( unittest.TestCase ):
         solution_basis = basis.evalBernsteinBasis1D
         test_sol_coeff, node_coords, ien_array = computeSolution( target_fun = target_fun, domain = domain, degree = degree, solution_basis = solution_basis )
         # gold_sol_coeff = ( [ -0.74841381974620419634327921170757, -3.4222814978197825394922980704166, 7.1463655364038831935841354617843, -2.9824200396151998304868767455064, 1.6115460899636204992283970407553, 0.87876479932866366847320748048494 ] )
-        # fit_err = computeFitError( gold_sol_coeff, test_sol_coeff, domain, solution_basis )
+        abs_err, rel_err = computeFitError( target_fun, test_sol_coeff, node_coords, ien_array, solution_basis )
         # plotCompareGoldTestSolution( gold_sol_coeff, test_sol_coeff, [-1, 1], solution_basis )
-        plotCompareFunToTestSolution( target_fun, test_sol_coeff, node_coords, ien_array, solution_basis )
-        # self.assertAlmostEqual( first = fit_err, second = 0, delta = 1e-2 )
+        # plotCompareFunToTestSolution( target_fun, test_sol_coeff, node_coords, ien_array, solution_basis )
+        self.assertAlmostEqual( first = rel_err, second = 0, delta = 1e-2 )
 
 # class Test_evaluateSolutionAt( unittest.TestCase ):
 #     def test_constant_bernstein( self ):
