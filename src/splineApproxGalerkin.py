@@ -82,10 +82,9 @@ def evaluateSolutionAt( x, coeff, uspline ):
     return sol
 
 def computeElementFitError( target_fun, coeff, uspline, elem_id ):
-    elem_nodes = ien_array[elem_idx]
-    domain = [ node_coords[elem_nodes[0]], node_coords[elem_nodes[-1]] ]
+    elem_domain = bext.getElementDomain( uspline, elem_id )
     abs_err_fun = lambda x : abs( target_fun( x ) - evaluateSolutionAt( x, coeff, uspline ) )
-    abs_error, residual = scipy.integrate.quad( abs_err_fun, domain[0], domain[1], epsrel = 1e-12, limit = 100 )
+    abs_error, residual = scipy.integrate.quad( abs_err_fun, elem_domain[0], elem_domain[1], epsrel = 1e-12, limit = 100 )
     return abs_error, residual
 
 def computeFitError( target_fun, coeff, uspline ):
