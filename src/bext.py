@@ -26,6 +26,10 @@ def getNumVertices( uspline ):
 def getNumNodes( uspline ):
     return getSplineNodes( uspline ).shape[0]
 
+def getDomain( uspline ):
+    nodes = getSplineNodes( uspline )
+    return [ min( nodes[:,0] ), max( nodes[:,0] ) ]
+
 def elemIdFromElemIdx( uspline, elem_idx ):
     element_blocks = uspline["elements"]["element_blocks"]
     elem_id = element_blocks[ elem_idx ]["us_cid"]
