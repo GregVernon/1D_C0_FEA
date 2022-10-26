@@ -6,7 +6,12 @@ if __name__ == "CubitPythonInterpreter_2":
     # We are running within the Coreform Cubit application, cubit python module is already available
     pass
 else:
-    sys.path.append("/opt/Coreform-Cubit-2022.10/bin")
+    if "linux" in sys.platform:
+        sys.path.append("/opt/Coreform-Cubit-2022.10/bin")
+    elif "darwin" in sys.platform:
+        pass
+    elif "win" in sys.platform:
+        sys.path.append( r"C:\Program Files\Coreform Cubit 2022.10\bin" )
     import cubit
     cubit.init(["cubit", "-nog"])
 
@@ -105,7 +110,7 @@ class Test_bsplines( unittest.TestCase):
     spline_space = { "domain": [0, 10], "degree": [degree]*(degree+1), "continuity": continuity}
     make_uspline_mesh( spline_space, "high_order_bspline" )
 
-class Test_bsplines( unittest.TestCase ):
+class Test_usplines( unittest.TestCase ):
   def test_uspline_1( self ):
     spline_space = { "domain": [0, 4], "degree": [1, 2, 3, 4], "continuity": [-1, 1, 2, 3, -1]}
     make_uspline_mesh( spline_space, "multi_deg_uspline" )
