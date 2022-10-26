@@ -126,7 +126,7 @@ class Test_computeSolution( unittest.TestCase ):
         target_fun = lambda x: x**3 - (8/5)*x**2 + (3/5)*x
         domain = [ 0, 1 ]
         degree = [2]*2
-        uspline = bext.readBEXT( "data/quadratic_bspline.json" )
+        uspline = bext.readBEXT( "data/two_element_quadratic_unit_bspline.json" )
         test_sol_coeff = computeSolution( target_fun = target_fun, uspline = uspline )
         # gold_sol_coeff = numpy.array( [ 1.0 / 120.0, 9.0 / 80.0, 1.0 / 40.0, -1.0 / 16.0, -1.0 / 120.0 ] )
         abs_err, rel_err = computeFitError( target_fun, test_sol_coeff, uspline )
@@ -135,44 +135,44 @@ class Test_computeSolution( unittest.TestCase ):
         # self.assertTrue( numpy.allclose( gold_sol_coeff, test_sol_coeff ) )
         self.assertAlmostEqual( first = rel_err, second = 0, delta = 1e-1 )
 
-    # def test_sin_target( self ):
-    #     # print( "SIN TEST" )
-    #     target_fun = lambda x: numpy.sin( numpy.pi * x )
-    #     domain = [ 0, 1 ]
-    #     degree = [2]*2
-    #     solution_basis = basis.evalBernsteinBasis1D
-    #     test_sol_coeff, node_coords, ien_array = computeSolution( target_fun = target_fun, domain = domain, degree = degree, solution_basis = solution_basis )
-    #     # gold_sol_coeff = numpy.array( [ (12*(numpy.pi**2 - 10))/(numpy.pi**3), -(6*(3*numpy.pi**2 - 40))/(numpy.pi**3), (12*(numpy.pi**2 - 10))/(numpy.pi**3)] )
-    #     abs_err, rel_err = computeFitError( target_fun, test_sol_coeff, node_coords, ien_array, solution_basis )
-    #     # plotCompareGoldTestSolution( gold_sol_coeff, test_sol_coeff, [0, 1], solution_basis )
-    #     # plotCompareFunToTestSolution( target_fun, test_sol_coeff, node_coords, ien_array, solution_basis )
-    #     self.assertAlmostEqual( first = rel_err, second = 0, delta = 1e-1 )
+    def test_sin_target( self ):
+        # print( "SIN TEST" )
+        target_fun = lambda x: numpy.sin( numpy.pi * x )
+        domain = [ 0, 1 ]
+        degree = [2]*2
+        uspline = bext.readBEXT( "data/two_element_quadratic_unit_bspline.json" )
+        test_sol_coeff = computeSolution( target_fun = target_fun, uspline = uspline )
+        # gold_sol_coeff = numpy.array( [ (12*(numpy.pi**2 - 10))/(numpy.pi**3), -(6*(3*numpy.pi**2 - 40))/(numpy.pi**3), (12*(numpy.pi**2 - 10))/(numpy.pi**3)] )
+        abs_err, rel_err = computeFitError( target_fun, test_sol_coeff, uspline )
+        # plotCompareGoldTestSolution( gold_sol_coeff, test_sol_coeff, [0, 1], solution_basis )
+        plotCompareFunToTestSolution( target_fun, test_sol_coeff, uspline )
+        self.assertAlmostEqual( first = rel_err, second = 0, delta = 1e-1 )
         
-    # def test_erfc_target( self ):
-    #     # print( "ERFC TEST" )
-    #     target_fun = lambda x: numpy.real( scipy.special.erfc( x ) )
-    #     domain = [ -2, 2 ]
-    #     degree = [3]*2
-    #     solution_basis = basis.evalBernsteinBasis1D
-    #     test_sol_coeff, node_coords, ien_array = computeSolution( target_fun = target_fun, domain = domain, degree = degree, solution_basis = solution_basis )
-    #     # gold_sol_coeff = numpy.array( [ 1.8962208131568558391841630949727, 2.6917062016799657617278998883219, -0.69170620167996576172789988832194, 0.10377918684314416081583690502732] )
-    #     abs_err, rel_err = computeFitError( target_fun, test_sol_coeff, node_coords, ien_array, solution_basis )
-    #     # plotCompareGoldTestSolution( gold_sol_coeff, test_sol_coeff, [-2, 2], solution_basis )
-    #     # plotCompareFunToTestSolution( target_fun, test_sol_coeff, node_coords, ien_array, solution_basis )
-    #     self.assertAlmostEqual( first = rel_err, second = 0, delta = 1e-2 )
+    def test_erfc_target( self ):
+        # print( "ERFC TEST" )
+        target_fun = lambda x: numpy.real( scipy.special.erfc( x ) )
+        domain = [ -2, 2 ]
+        degree = [3]*2
+        uspline = bext.readBEXT( "data/two_element_cubic_quadriunit_bspline.json" )
+        test_sol_coeff = computeSolution( target_fun = target_fun, uspline = uspline )
+        # gold_sol_coeff = numpy.array( [ 1.8962208131568558391841630949727, 2.6917062016799657617278998883219, -0.69170620167996576172789988832194, 0.10377918684314416081583690502732] )
+        abs_err, rel_err = computeFitError( target_fun, test_sol_coeff, uspline )
+        # plotCompareGoldTestSolution( gold_sol_coeff, test_sol_coeff, [-2, 2], solution_basis )
+        plotCompareFunToTestSolution( target_fun, test_sol_coeff, uspline )
+        self.assertAlmostEqual( first = rel_err, second = 0, delta = 1e-2 )
     
-    # def test_exptx_target( self ):
-    #     # print( "EXPT TEST" )
-    #     target_fun = lambda x: float( numpy.real( float( x )**float( x ) ) )
-    #     domain = [ -1, 1 ]
-    #     degree = [5]*2
-    #     solution_basis = basis.evalBernsteinBasis1D
-    #     test_sol_coeff, node_coords, ien_array = computeSolution( target_fun = target_fun, domain = domain, degree = degree, solution_basis = solution_basis )
-    #     # gold_sol_coeff = ( [ -0.74841381974620419634327921170757, -3.4222814978197825394922980704166, 7.1463655364038831935841354617843, -2.9824200396151998304868767455064, 1.6115460899636204992283970407553, 0.87876479932866366847320748048494 ] )
-    #     abs_err, rel_err = computeFitError( target_fun, test_sol_coeff, node_coords, ien_array, solution_basis )
-    #     # plotCompareGoldTestSolution( gold_sol_coeff, test_sol_coeff, [-1, 1], solution_basis )
-    #     # plotCompareFunToTestSolution( target_fun, test_sol_coeff, node_coords, ien_array, solution_basis )
-    #     self.assertAlmostEqual( first = rel_err, second = 0, delta = 1e-2 )
+    def test_exptx_target( self ):
+        # print( "EXPT TEST" )
+        target_fun = lambda x: float( numpy.real( float( x )**float( x ) ) )
+        domain = [ -1, 1 ]
+        degree = [5]*2
+        uspline = bext.readBEXT( "data/test_extpx_bspline.json" )
+        test_sol_coeff = computeSolution( target_fun = target_fun, uspline = uspline )
+        # gold_sol_coeff = ( [ -0.74841381974620419634327921170757, -3.4222814978197825394922980704166, 7.1463655364038831935841354617843, -2.9824200396151998304868767455064, 1.6115460899636204992283970407553, 0.87876479932866366847320748048494 ] )
+        abs_err, rel_err = computeFitError( target_fun, test_sol_coeff, uspline )
+        # plotCompareGoldTestSolution( gold_sol_coeff, test_sol_coeff, [-1, 1], solution_basis )
+        plotCompareFunToTestSolution( target_fun, test_sol_coeff, uspline )
+        self.assertAlmostEqual( first = rel_err, second = 0, delta = 1e-2 )
 
 # class Test_evaluateSolutionAt( unittest.TestCase ):
 #     def test_constant_bernstein( self ):
