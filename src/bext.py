@@ -26,6 +26,15 @@ def getNumVertices( uspline ):
 def getNumNodes( uspline ):
     return getSplineNodes( uspline ).shape[0]
 
+def getNumBezierNodes( uspline ):
+    num_elems = getNumElems( uspline )
+    num_bez_nodes = 0
+    for elem_idx in range( 0, num_elems ):
+        elem_id = elemIdFromElemIdx( uspline, elem_idx )
+        elem_degree = getElementDegree( uspline, elem_id )
+        num_bez_nodes += elem_degree + 1
+    return num_bez_nodes
+
 def getDomain( uspline ):
     nodes = getSplineNodes( uspline )
     return [ min( nodes[:,0] ), max( nodes[:,0] ) ]
@@ -54,6 +63,17 @@ def getElementNodeIds( uspline, elem_id ):
     elem_idx = elemIdxFromElemId( uspline, elem_id )
     elem_node_ids = numpy.array( uspline["elements"]["element_blocks"][elem_idx]["node_ids"] )
     return elem_node_ids
+
+def getElementBezierNodeIds( uspline, elem_id ):
+    num_elems = getNumElems( uspline )
+    num_bez_nodes = 0
+    for elem_idx in range( 0, num_elems ):
+        curr_elem_id = elemIdFromElemIdx( uspline, elem_idx )
+        elem_degree = getElementDegree( uspline, curr_elem_id )
+        if elem_id == curr_elem_id:
+            elem_bez_node_ids = list( range( num_bez_nodes, num_bez_nodes + elem_degree + 1 ) )
+            return elem_bez_node_ids
+        num_bez_nodes += elem_degree + 1
 
 def getElementNodes( uspline, elem_id ):
     elem_node_ids = getElementNodeIds( uspline, elem_id )
@@ -85,6 +105,23 @@ def getElementExtractionOperator( uspline, elem_id ):
     for n in range( 0, len( coeff_vector_ids ) ):
         C[n,:] = coeff_vectors[ coeff_vector_ids[n] ]
     return C
+
+def getGlobalExtractionOperator( uspline ):
+    num_elems = getNumElems( uspline )
+    num_nodes = getNumNodes( uspline )
+    num_bez_nodes = getNumBezierNodes( uspline )
+    glob_extraction_operator = numpy.zeros( shape = (num_nodes, num_bez_nodes ) )
+    for elem_idx in range( 0, num_elems ):
+        elem_id = elemIdFromElemIdx( uspline, elem_idx )
+        elem_node_ids = getElementNodeIds( uspline, elem_id )
+        elem_bez_node_ids = getElementBezierNodeIds( uspline, elem_id )
+        elem_extraction_operator = getElementExtractionOperator( uspline, elem_id )
+        for i in range( 0, len( elem_bez_node_ids ) ):
+            I = elem_bez_node_ids[i]
+            for j in range( 0, len( elem_node_ids ) ):
+                J = elem_node_ids[j]
+                glob_extraction_operator[J,I] = elem_extraction_operator[j, i]
+    return glob_extraction_operator
 
 def getElementBezierNodes( uspline, elem_id ):
     elem_nodes = getElementNodes( uspline, elem_id )
@@ -182,7 +219,6 @@ class Test_two_element_quadratic_bspline( unittest.TestCase ):
     def test_plotBasis( self ):
         fig, ax = plt.subplots()
         num_pts = 100
-        xi = numpy.linspace( 0, 1, num_pts )
         for elem_idx in range( 0, getNumElems( self.uspline ) ):
             elem_id = elemIdFromElemIdx( self.uspline, elem_idx )
             elem_degree = getElementDegree( self.uspline, elem_id )
@@ -192,10 +228,17 @@ class Test_two_element_quadratic_bspline( unittest.TestCase ):
             y = numpy.zeros( shape = ( 3, num_pts ) )
             for n in range( 0, elem_degree + 1 ):
                 for i in range( 0, len( x ) ):
-                    y[n, i] = basis.evalBernsteinBasis1D( elem_degree, n, xi[i] )
+                    y[n, i] = basis.evalBernsteinBasis1D( elem_degree, n, elem_domain, x[i] )
             y = C @ y
             ax.plot( x, y.T, color = getLineColor( elem_idx ) )
         plt.show()
+
+class Test_quadratic_bspline( unittest.TestCase ):
+    def setUp( self ):
+        self.uspline = readBEXT( "data/quadratic_bspline.json" )
+    
+    def test_getGlobalExtractionOperator( self ):
+        C = getGlobalExtractionOperator( self.uspline )
     
 class Test_multi_deg_uspline( unittest.TestCase ):
     def setUp( self ):
@@ -272,7 +315,6 @@ class Test_multi_deg_uspline( unittest.TestCase ):
     def test_plotBasis( self ):
         fig, ax = plt.subplots()
         num_pts = 100
-        xi = numpy.linspace( 0, 1, num_pts )
         for elem_idx in range( 0, getNumElems( self.uspline ) ):
             elem_id = elemIdFromElemIdx( self.uspline, elem_idx )
             elem_degree = getElementDegree( self.uspline, elem_id )
@@ -282,7 +324,7 @@ class Test_multi_deg_uspline( unittest.TestCase ):
             y = numpy.zeros( shape = ( elem_degree + 1, num_pts ) )
             for n in range( 0, elem_degree + 1 ):
                 for i in range( 0, len( x ) ):
-                    y[n, i] = basis.evalBernsteinBasis1D( elem_degree, n, xi[i] )
+                    y[n, i] = basis.evalBernsteinBasis1D( elem_degree, n, elem_domain, x[i] )
             y = C @ y
             ax.plot( x, y.T, color = getLineColor( elem_idx ) )
         plt.show()
