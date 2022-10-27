@@ -64,6 +64,17 @@ def getElementNodeIds( uspline, elem_id ):
     elem_node_ids = numpy.array( uspline["elements"]["element_blocks"][elem_idx]["node_ids"] )
     return elem_node_ids
 
+def getElementBezierNodeIds( uspline, elem_id ):
+    num_elems = getNumElems( uspline )
+    num_bez_nodes = 0
+    for elem_idx in range( 0, num_elems ):
+        curr_elem_id = elemIdFromElemIdx( uspline, elem_idx )
+        elem_degree = getElementDegree( uspline, curr_elem_id )
+        if elem_id == curr_elem_id:
+            elem_bez_node_ids = list( range( num_bez_nodes, num_bez_nodes + elem_degree + 1 ) )
+            return elem_bez_node_ids
+        num_bez_nodes += elem_degree + 1
+
 def getElementNodes( uspline, elem_id ):
     elem_node_ids = getElementNodeIds( uspline, elem_id )
     spline_nodes = getSplineNodes( uspline )
