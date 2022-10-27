@@ -182,7 +182,6 @@ class Test_two_element_quadratic_bspline( unittest.TestCase ):
     def test_plotBasis( self ):
         fig, ax = plt.subplots()
         num_pts = 100
-        xi = numpy.linspace( 0, 1, num_pts )
         for elem_idx in range( 0, getNumElems( self.uspline ) ):
             elem_id = elemIdFromElemIdx( self.uspline, elem_idx )
             elem_degree = getElementDegree( self.uspline, elem_id )
@@ -192,7 +191,7 @@ class Test_two_element_quadratic_bspline( unittest.TestCase ):
             y = numpy.zeros( shape = ( 3, num_pts ) )
             for n in range( 0, elem_degree + 1 ):
                 for i in range( 0, len( x ) ):
-                    y[n, i] = basis.evalBernsteinBasis1D( elem_degree, n, xi[i] )
+                    y[n, i] = basis.evalBernsteinBasis1D( elem_degree, n, elem_domain, x[i] )
             y = C @ y
             ax.plot( x, y.T, color = getLineColor( elem_idx ) )
         plt.show()
@@ -272,7 +271,6 @@ class Test_multi_deg_uspline( unittest.TestCase ):
     def test_plotBasis( self ):
         fig, ax = plt.subplots()
         num_pts = 100
-        xi = numpy.linspace( 0, 1, num_pts )
         for elem_idx in range( 0, getNumElems( self.uspline ) ):
             elem_id = elemIdFromElemIdx( self.uspline, elem_idx )
             elem_degree = getElementDegree( self.uspline, elem_id )
@@ -282,7 +280,7 @@ class Test_multi_deg_uspline( unittest.TestCase ):
             y = numpy.zeros( shape = ( elem_degree + 1, num_pts ) )
             for n in range( 0, elem_degree + 1 ):
                 for i in range( 0, len( x ) ):
-                    y[n, i] = basis.evalBernsteinBasis1D( elem_degree, n, xi[i] )
+                    y[n, i] = basis.evalBernsteinBasis1D( elem_degree, n, elem_domain, x[i] )
             y = C @ y
             ax.plot( x, y.T, color = getLineColor( elem_idx ) )
         plt.show()
