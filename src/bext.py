@@ -106,6 +106,23 @@ def getElementExtractionOperator( uspline, elem_id ):
         C[n,:] = coeff_vectors[ coeff_vector_ids[n] ]
     return C
 
+def getGlobalExtractionOperator( uspline ):
+    num_elems = getNumElems( uspline )
+    num_nodes = getNumNodes( uspline )
+    num_bez_nodes = getNumBezierNodes( uspline )
+    glob_extraction_operator = numpy.zeros( shape = (num_nodes, num_bez_nodes ) )
+    for elem_idx in range( 0, num_elems ):
+        elem_id = elemIdFromElemIdx( uspline, elem_idx )
+        elem_node_ids = getElementNodeIds( uspline, elem_id )
+        elem_bez_node_ids = getElementBezierNodeIds( uspline, elem_id )
+        elem_extraction_operator = getElementExtractionOperator( uspline, elem_id )
+        for i in range( 0, len( elem_bez_node_ids ) ):
+            I = elem_bez_node_ids[i]
+            for j in range( 0, len( elem_node_ids ) ):
+                J = elem_node_ids[j]
+                glob_extraction_operator[J,I] = elem_extraction_operator[j, i]
+    return glob_extraction_operator
+
 def getElementBezierNodes( uspline, elem_id ):
     elem_nodes = getElementNodes( uspline, elem_id )
     C = getElementExtractionOperator( uspline, elem_id )
