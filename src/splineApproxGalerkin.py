@@ -3,6 +3,7 @@ import numpy
 import scipy
 import matplotlib
 import matplotlib.pyplot as plt
+# matplotlib.use( "qtAgg" )
 
 if __name__ == "src.splineApproxGalerkin":
     from src import basis
@@ -130,7 +131,7 @@ class Test_computeSolution( unittest.TestCase ):
         test_sol_coeff = computeSolution( target_fun = target_fun, uspline = uspline )
         # gold_sol_coeff = numpy.array( [ 1.0 / 120.0, 9.0 / 80.0, 1.0 / 40.0, -1.0 / 16.0, -1.0 / 120.0 ] )
         abs_err, rel_err = computeFitError( target_fun, test_sol_coeff, uspline )
-        plotCompareFunToTestSolution( target_fun, test_sol_coeff, uspline )
+        # plotCompareFunToTestSolution( target_fun, test_sol_coeff, uspline )
         # self.assertTrue( numpy.allclose( gold_sol_coeff, test_sol_coeff ) )
         self.assertAlmostEqual( first = rel_err, second = 0, delta = 1e-1 )
 
@@ -142,7 +143,7 @@ class Test_computeSolution( unittest.TestCase ):
         uspline = bext.readBEXT( "data/two_element_quadratic_unit_bspline.json" )
         test_sol_coeff = computeSolution( target_fun = target_fun, uspline = uspline )
         abs_err, rel_err = computeFitError( target_fun, test_sol_coeff, uspline )
-        plotCompareFunToTestSolution( target_fun, test_sol_coeff, uspline )
+        # plotCompareFunToTestSolution( target_fun, test_sol_coeff, uspline )
         self.assertAlmostEqual( first = rel_err, second = 0, delta = 1e-1 )
         
     def test_erfc_target( self ):
@@ -153,8 +154,7 @@ class Test_computeSolution( unittest.TestCase ):
         uspline = bext.readBEXT( "data/two_element_cubic_quadriunit_bspline.json" )
         test_sol_coeff = computeSolution( target_fun = target_fun, uspline = uspline )
         abs_err, rel_err = computeFitError( target_fun, test_sol_coeff, uspline )
-        # plotCompareGoldTestSolution( gold_sol_coeff, test_sol_coeff, [-2, 2], solution_basis )
-        plotCompareFunToTestSolution( target_fun, test_sol_coeff, uspline )
+        # plotCompareFunToTestSolution( target_fun, test_sol_coeff, uspline )
         self.assertAlmostEqual( first = rel_err, second = 0, delta = 1e-2 )
     
     def test_exptx_target( self ):
@@ -165,7 +165,7 @@ class Test_computeSolution( unittest.TestCase ):
         uspline = bext.readBEXT( "data/test_extpx_bspline.json" )
         test_sol_coeff = computeSolution( target_fun = target_fun, uspline = uspline )
         abs_err, rel_err = computeFitError( target_fun, test_sol_coeff, uspline )
-        plotCompareFunToTestSolution( target_fun, test_sol_coeff, uspline )
+        # plotCompareFunToTestSolution( target_fun, test_sol_coeff, uspline )
         self.assertAlmostEqual( first = rel_err, second = 0, delta = 1e-2 )
 
 # class Test_evaluateSolutionAt( unittest.TestCase ):
