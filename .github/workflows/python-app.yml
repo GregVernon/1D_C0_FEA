@@ -44,3 +44,6 @@ jobs:
         python -m unittest src/approxInterp.py
         python -m unittest src/momentFitting.py
         python -m unittest src/approxGalerkin.py
+        python -m unittest src/meshApproxGalerkin.py
+        python -m unittest src/splineApproxGalerkin.py
+        python -m unittest src/bext.py
