@@ -155,14 +155,14 @@ class Test_computeSolution( unittest.TestCase ):
         test_sol_coeff = computeSolution( target_fun = target_fun, uspline = uspline )
         abs_err, rel_err = computeFitError( target_fun, test_sol_coeff, uspline )
         # plotCompareFunToTestSolution( target_fun, test_sol_coeff, uspline )
-        self.assertAlmostEqual( first = rel_err, second = 0, delta = 1e-2 )
+        self.assertAlmostEqual( first = rel_err, second = 0, delta = 1e-1 )
     
     def test_exptx_target( self ):
         # print( "EXPT TEST" )
         target_fun = lambda x: float( numpy.real( float( x )**float( x ) ) )
         domain = [ -1, 1 ]
         degree = [5]*2
-        uspline = bext.readBEXT( "data/test_extpx_bspline.json" )
+        uspline = bext.readBEXT( "data/two_element_pentic_biunit_c0_bspline.json" )
         test_sol_coeff = computeSolution( target_fun = target_fun, uspline = uspline )
         abs_err, rel_err = computeFitError( target_fun, test_sol_coeff, uspline )
         # plotCompareFunToTestSolution( target_fun, test_sol_coeff, uspline )
