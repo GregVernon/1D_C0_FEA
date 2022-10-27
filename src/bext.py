@@ -26,6 +26,15 @@ def getNumVertices( uspline ):
 def getNumNodes( uspline ):
     return getSplineNodes( uspline ).shape[0]
 
+def getNumBezierNodes( uspline ):
+    num_elems = getNumElems( uspline )
+    num_bez_nodes = 0
+    for elem_idx in range( 0, num_elems ):
+        elem_id = elemIdFromElemIdx( uspline, elem_idx )
+        elem_degree = getElementDegree( uspline, elem_id )
+        num_bez_nodes += elem_degree + 1
+    return num_bez_nodes
+
 def getDomain( uspline ):
     nodes = getSplineNodes( uspline )
     return [ min( nodes[:,0] ), max( nodes[:,0] ) ]
