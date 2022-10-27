@@ -232,6 +232,13 @@ class Test_two_element_quadratic_bspline( unittest.TestCase ):
             y = C @ y
             ax.plot( x, y.T, color = getLineColor( elem_idx ) )
         plt.show()
+
+class Test_quadratic_bspline( unittest.TestCase ):
+    def setUp( self ):
+        self.uspline = readBEXT( "data/quadratic_bspline.json" )
+    
+    def test_getGlobalExtractionOperator( self ):
+        C = getGlobalExtractionOperator( self.uspline )
     
 class Test_multi_deg_uspline( unittest.TestCase ):
     def setUp( self ):
