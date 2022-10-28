@@ -45,23 +45,12 @@ def assembleForceVector( target_fun, node_coords, ien_array, solution_basis ):
     for elem_idx in range( 0, num_elems ):
         elem_degree = len( ien_array[elem_idx] ) - 1
         elem_domain = mesh.getElementDomain( node_coords, ien_array, elem_idx )
-        err = float("inf")
-        prev_local_force_vector = err * numpy.ones( shape = ( elem_degree + 1 ) )
-        num_qp = 0
-        tol = 1e-5
-        while ( err > tol ) and ( num_qp <= 15 ):
-            local_force_vector = numpy.zeros( shape = ( elem_degree + 1 ) )
-            num_qp += 1
-            for i in range( 0, elem_degree + 1 ):
-                Ni = lambda x: solution_basis( elem_degree, i, [-1, 1], x )
-                integrand = lambda x: Ni( x ) * target_fun( basis.affine_mapping_1D( [-1, 1], elem_domain, x ) )
-                local_force_vector[i] += quadrature.quad( integrand, elem_domain, num_qp )
-            if num_qp > 1:
-                err = numpy.linalg.norm( prev_local_force_vector - local_force_vector ) / numpy.linalg.norm( prev_local_force_vector, 1 )
-            prev_local_force_vector = local_force_vector
+        num_qp = int( numpy.ceil( ( 2*elem_degree + 1 ) / 2.0 ) )
         for i in range( 0, elem_degree + 1 ):
             I = ien_array[elem_idx][i]
-            force_vector[I] += local_force_vector[i]
+            Ni = lambda x: solution_basis( elem_degree, i, [-1, 1], x )
+            integrand = lambda x: Ni( x ) * target_fun( basis.affine_mapping_1D( [-1, 1], elem_domain, x ) )
+            force_vector[I] += quadrature.quad( integrand, elem_domain, num_qp )
     return force_vector
 
 def evaluateSolutionAt( x, coeff, node_coords, ien_array, eval_basis ):

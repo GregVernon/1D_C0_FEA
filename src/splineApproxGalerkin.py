@@ -51,23 +51,12 @@ def assembleForceVector( target_fun, uspline ):
         elem_degree = bext.getElementDegree( uspline, elem_id )
         elem_nodes = bext.getElementNodeIds( uspline, elem_id )
         elem_extraction_operator = bext.getElementExtractionOperator( uspline, elem_id )
-        err = float("inf")
-        prev_local_force_vector = err * numpy.ones( shape = ( elem_degree + 1 ) )
-        num_qp = 0
-        tol = 1e-5
-        while ( err > tol ) and ( num_qp <= 15 ):
-            local_force_vector = numpy.zeros( shape = ( elem_degree + 1 ) )
-            num_qp += 1
-            for i in range( 0, elem_degree + 1 ):
-                Ni = lambda x: basis.evalSplineBasis1D( elem_extraction_operator, i, [-1, 1], x )
-                integrand = lambda x: Ni( x ) * target_fun( basis.affine_mapping_1D( [-1, 1], elem_domain, x ) )
-                local_force_vector[i] += quadrature.quad( integrand, elem_domain, num_qp )
-            if num_qp > 1:
-                err = numpy.linalg.norm( prev_local_force_vector - local_force_vector ) / numpy.linalg.norm( prev_local_force_vector, 1 )
-            prev_local_force_vector = local_force_vector
+        num_qp = int( numpy.ceil( ( 2*elem_degree + 1 ) / 2.0 ) )
         for i in range( 0, elem_degree + 1 ):
             I = elem_nodes[i]
-            force_vector[I] += local_force_vector[i]
+            Ni = lambda x: basis.evalSplineBasis1D( elem_extraction_operator, i, [-1, 1], x )
+            integrand = lambda x: Ni( x ) * target_fun( basis.affine_mapping_1D( [-1, 1], elem_domain, x ) )
+            force_vector[I] += quadrature.quad( integrand, elem_domain, num_qp )
     return force_vector
 
 def evaluateSolutionAt( x, coeff, uspline ):
