@@ -1,8 +1,13 @@
 import os
 import sys
-# sys.path = [ i for i in sys.path if "Roaming" not in i ]
+import unittest
 import sympy
+import numpy
 import argparse
+import itertools
+import matplotlib
+from matplotlib import pyplot as plt
+from pyinstrument import Profiler
 
 if __name__ == "src.cubitApproxGalerkin":
     from src import splineApproxGalerkin
@@ -55,6 +60,75 @@ def parseCommandLineArguments( cli_args ):
     parser.add_argument( "--continuity", "-c", nargs = '+', type = int,   required = True )
     args = parser.parse_args( cli_args.split() )
     return args.function[0], args.domain, args.degree, args.continuity
+
+class Test_h_convergence_rates( unittest.TestCase ):
+    def test_sin_linear( self ):
+        target_fun_str = "sin(pi*x)"
+        domain = [ 0, 1 ]
+        degree = 1
+        continuity = degree - 1
+        num_iter = 7
+        num_elems = 2**numpy.arange( 1, num_iter+1 )
+        abs_err = numpy.zeros( num_iter )
+        rel_err = numpy.zeros( num_iter )
+        for i in range( 0, num_iter ):
+            degree_list = [ degree ]*num_elems[i]
+            continuity_list = list( itertools.chain( *[[-1], [continuity]*(num_elems[i]-1), [-1]] ) )
+            target_fun, spline_space = prepareCommandInputs( target_fun_str, domain, degree_list, continuity_list )
+            sol = main( target_fun, spline_space )
+            uspline = bext.readBEXT( "temp_uspline.json" )
+            abs_err[i], rel_err[i] = splineApproxGalerkin.computeFitError( target_fun, sol, uspline )
+        fig, ax = plt.subplots()
+        print( num_elems, rel_err )
+        ax.loglog( num_elems, rel_err, linewidth=2.0, color = [0, 0, 0], marker = "o" )
+        ax.grid( visible = True, which = "both" )
+        plt.show()
+    
+    def test_sin_quadratic( self ):
+        target_fun_str = "sin(pi*x)"
+        domain = [ -1, 1 ]
+        degree = 2
+        continuity = degree - 1
+        num_iter = 7
+        num_elems = 2**numpy.arange( 1, num_iter+1 )
+        abs_err = numpy.zeros( num_iter )
+        rel_err = numpy.zeros( num_iter )
+        for i in range( 0, num_iter ):
+            degree_list = [ degree ]*num_elems[i]
+            continuity_list = list( itertools.chain( *[[-1], [continuity]*(num_elems[i]-1), [-1]] ) )
+            target_fun, spline_space = prepareCommandInputs( target_fun_str, domain, degree_list, continuity_list )
+            sol = main( target_fun, spline_space )
+            uspline = bext.readBEXT( "temp_uspline.json" )
+            abs_err[i], rel_err[i] = splineApproxGalerkin.computeFitError( target_fun, sol, uspline )
+        fig, ax = plt.subplots()
+        print( num_elems, rel_err )
+        ax.loglog( num_elems, rel_err, linewidth=2.0, color = [0, 0, 0], marker = "o" )
+        ax.grid( visible = True, which = "both" )
+        plt.show()
+
+    def test_sin_quadratic_C0( self ):
+        target_fun_str = "sin(pi*x)"
+        domain = [ 0, 1 ]
+        degree = 2
+        continuity = 0
+        num_iter = 7
+        num_elems = 2**numpy.arange( 1, num_iter+1 )
+        abs_err = numpy.zeros( num_iter )
+        rel_err = numpy.zeros( num_iter )
+        for i in range( 0, num_iter ):
+            degree_list = [ degree ]*num_elems[i]
+            continuity_list = list( itertools.chain( *[[-1], [continuity]*(num_elems[i]-1), [-1]] ) )
+            target_fun, spline_space = prepareCommandInputs( target_fun_str, domain, degree_list, continuity_list )
+            sol = main( target_fun, spline_space )
+            uspline = bext.readBEXT( "temp_uspline.json" )
+            abs_err[i], rel_err[i] = splineApproxGalerkin.computeFitError( target_fun, sol, uspline )
+            # print(abs_err[i], rel_err[i])
+            splineApproxGalerkin.plotCompareFunToTestSolution( target_fun, sol, uspline )
+        fig, ax = plt.subplots()
+        print( num_elems, rel_err )
+        ax.loglog( num_elems, rel_err, linewidth=2.0, color = [0, 0, 0], marker = "o" )
+        ax.grid( visible = True, which = "both" )
+        plt.show()
 
 if __name__ == "__main__":
     target_fun_str, domain, degree, continuity = parseCommandLineArguments( sys.argv[-1] )
