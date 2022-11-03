@@ -72,17 +72,26 @@ def evaluateSolutionAt( x, coeff, uspline ):
     return sol
 
 def computeElementFitError( target_fun, coeff, uspline, elem_id ):
+    domain = bext.getDomain( uspline )
     elem_domain = bext.getElementDomain( uspline, elem_id )
-    abs_err_fun = lambda x : abs( target_fun( x ) - evaluateSolutionAt( x, coeff, uspline ) )
-    abs_error, residual = scipy.integrate.quad( abs_err_fun, elem_domain[0], elem_domain[1], epsrel = 1e-12, limit = 100 )
-    return abs_error, residual
+    elem_degree = bext.getElementDegree( uspline, elem_id )
+    num_qp = int( numpy.ceil( ( 2*elem_degree + 1 ) / 2.0 ) + 1 )
+    abs_err_fun = lambda x : abs( target_fun( basis.affine_mapping_1D( [-1, 1], elem_domain, x ) ) - evaluateSolutionAt( basis.affine_mapping_1D( [-1, 1], elem_domain, x ), coeff, uspline ) )
+    abs_error = quadrature.quad( abs_err_fun, elem_domain, num_qp )
+    # abs_error, residual = scipy.integrate.quad( abs_err_fun, elem_domain[0], elem_domain[1], epsrel = 1e-12, limit = 100 )
+    return abs_error
 
 def computeFitError( target_fun, coeff, uspline ):
     num_elems = bext.getNumElems( uspline )
+    abs_error = 0.0
+    for elem_idx in range( 0, num_elems ):
+        elem_id = bext.elemIdFromElemIdx( uspline, elem_idx )
+        abs_error += computeElementFitError( target_fun, coeff, uspline, elem_id )
     domain = bext.getDomain( uspline )
     target_fun_norm, _ = scipy.integrate.quad( lambda x: abs( target_fun(x) ), domain[0], domain[1], epsrel = 1e-12, limit = num_elems * 100 )
-    abs_err_fun = lambda x : abs( target_fun( x ) - evaluateSolutionAt( x, coeff, uspline ) )
-    abs_error, residual = scipy.integrate.quad( abs_err_fun, domain[0], domain[1], epsrel = 1e-12, limit = num_elems * 100 )
+    # abs_err_fun = lambda x : abs( target_fun( x ) - evaluateSolutionAt( x, coeff, uspline ) )
+    # abs_error, residual = scipy.integrate.quad( abs_err_fun, domain[0], domain[1], epsrel = 1e-12, limit = num_elems * 100 )
+    # abs_error = quadrature.quad( abs_err_fun, domain[0], domain[1], epsrel = 1e-12, limit = num_elems * 100 )
     rel_error = abs_error / target_fun_norm
     return abs_error, rel_error
 
