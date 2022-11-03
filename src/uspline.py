@@ -23,6 +23,7 @@ def make_uspline_mesh( spline_space, filename ):
   assign_uspline_params( spline_space )
   build_uspline()
   export_uspline( filename )
+  cubit.cmd( "reset" )
 
 ## SECONDARY FUNCTIONS
 def build_geometry( spline_space ):
