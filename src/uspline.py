@@ -13,7 +13,7 @@ else:
     elif "win" in sys.platform:
         sys.path.append( r"C:\Program Files\Coreform Cubit 2022.10\bin" )
     import cubit
-    cubit.init(["cubit", "-nog"])
+    cubit.init(["cubit", "-nog", "-nojournal" ])
 
 ## MAIN FUNCTION
 def make_uspline_mesh( spline_space, filename ):
