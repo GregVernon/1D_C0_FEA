@@ -153,6 +153,11 @@ def getElementIdContainingPoint( uspline, point ):
             return elem_id
     raise Exception( "ELEMENT_CONTAINING_POINT_NOT_FOUND" )
 
+def getNodeIdNearPoint( uspline, point ):
+    spline_nodes = getSplineNodes( uspline )[:,0]
+    node_dist = numpy.sqrt( ( spline_nodes - point )**2.0 )
+    return numpy.argmin( node_dist )
+
 def uniquetol( input_array, tol ):
     equalityArray = numpy.zeros( len( input_array ), dtype="bool" )
     for i in range( 0, len( input_array) ):
