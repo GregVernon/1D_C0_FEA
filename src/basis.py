@@ -46,17 +46,16 @@ def evalBernsteinBasis1DVector( degree, domain, variate ):
     return basis_val_vector
 
 def evalBernsteinBasisDeriv( degree, basis_idx, deriv, domain, variate ):
-    if ( variate < 0.0 ) or ( variate > +1.0 ):
-        raise Exception( "NOT_IN_DOMAIN" )
-    if deriv > 0:
+    if deriv >= 1:
+        jacobian = ( domain[1] - domain[0] ) / ( 1 - 0 )
         if basis_idx == 0:
             term_1 = evalBernsteinBasisDeriv( degree = degree - 1, basis_idx = basis_idx - 1, deriv = deriv - 1, domain = domain, variate = variate )
             term_2 = evalBernsteinBasisDeriv( degree = degree - 1, basis_idx = basis_idx, deriv = deriv - 1, domain = domain, variate = variate )
-            basis_val = degree * ( term_1 - term_2 )
+            basis_val = degree * ( term_1 - term_2 ) / jacobian
         else:
             term_1 = evalBernsteinBasisDeriv( degree = degree - 1, basis_idx = basis_idx - 1, deriv = deriv - 1, domain = domain, variate = variate )
             term_2 = evalBernsteinBasisDeriv( degree = degree - 1, basis_idx = basis_idx, deriv = deriv - 1, domain = domain, variate = variate )
-            basis_val = degree * ( term_1 - term_2 )
+            basis_val = degree * ( term_1 - term_2 ) / jacobian
     else:
         if ( basis_idx < 0 ) or ( basis_idx > degree ):
             basis_val = 0.0
@@ -64,11 +63,23 @@ def evalBernsteinBasisDeriv( degree, basis_idx, deriv, domain, variate ):
             basis_val = evalBernsteinBasis1D( degree, basis_idx, domain, variate )
     return basis_val
 
+def evalBernsteinBasisDeriv1DVector( degree, deriv, domain, variate ):
+    basis_deriv_vector = numpy.zeros( shape = ( degree + 1 ) )
+    for basis_idx in range( 0, degree + 1 ):
+        basis_deriv_vector[basis_idx] = evalBernsteinBasisDeriv( degree, basis_idx, deriv, domain, variate )
+    return basis_deriv_vector
+
 def evalSplineBasis1D( extraction_operator, basis_idx, domain, variate ):
-    degree = extraction_operator.shape[0]-1
+    degree = extraction_operator.shape[0] - 1
     N = evalBernsteinBasis1DVector( degree, domain, variate )
     basis_val = numpy.matmul( extraction_operator, N )[basis_idx]
     return basis_val
+
+def evalSplineBasisDeriv1D( extraction_operator, basis_idx, deriv, domain, variate ):
+    degree = extraction_operator.shape[0] - 1
+    N = evalBernsteinBasisDeriv1DVector( degree, deriv, domain, variate )
+    basis_deriv = numpy.matmul( extraction_operator, N )[basis_idx]
+    return basis_deriv
 
 def evalLegendreBasis1D( degree, basis_idx, domain, variate ):
     variate = affine_mapping_1D( domain, [-1, 1], variate )
@@ -305,6 +316,131 @@ class Test_evalBernsteinBasisDeriv( unittest.TestCase ):
         self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 1, deriv = 2, domain = [0, 1], variate = x[1] ), second = -4.0, delta = 1e-12 )
         self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 2, deriv = 2, domain = [0, 1], variate = x[0] ), second = +2.0, delta = 1e-12 )
         self.assertAlmostEqual( first = evalBernsteinBasisDeriv( degree = 2, basis_idx = 2, deriv = 2, domain = [0, 1], variate = x[1] ), second = +2.0, delta = 1e-12 )
+
+class Test_evalBernsteinBasisDeriv1DVector( unittest.TestCase ):
+    def test_linear_0th_deriv_at_nodes( self ):
+        self.assertTrue( numpy.allclose( evalBernsteinBasisDeriv1DVector( degree = 1, deriv = 0, domain = [ 0, 1 ], variate = 0.0 ), numpy.array( [ 1.0, 0.0 ] ) ) )
+        self.assertTrue( numpy.allclose( evalBernsteinBasisDeriv1DVector( degree = 1, deriv = 0, domain = [ 0, 1 ], variate = 1.0 ), numpy.array( [ 0.0, 1.0 ] ) ) )
+    
+    def test_linear_1st_deriv_at_nodes( self ):
+        self.assertTrue( numpy.allclose( evalBernsteinBasisDeriv1DVector( degree = 1, deriv = 1, domain = [ 0, 1 ], variate = 0.0 ), numpy.array( [ -1.0, 1.0 ] ) ) )
+        self.assertTrue( numpy.allclose( evalBernsteinBasisDeriv1DVector( degree = 1, deriv = 1, domain = [ 0, 1 ], variate = 1.0 ), numpy.array( [ -1.0, 1.0 ] ) ) )
+    
+    def test_quadratic_0th_deriv_at_nodes( self ):
+        self.assertTrue( numpy.allclose( evalBernsteinBasisDeriv1DVector( degree = 2, deriv = 0, domain = [ 0, 1 ], variate = 0.0 ), numpy.array( [ 1.0, 0.0, 0.0 ] ) ) )
+        self.assertTrue( numpy.allclose( evalBernsteinBasisDeriv1DVector( degree = 2, deriv = 0, domain = [ 0, 1 ], variate = 0.5 ), numpy.array( [ 0.25, 0.5, 0.25 ] ) ) )
+        self.assertTrue( numpy.allclose( evalBernsteinBasisDeriv1DVector( degree = 2, deriv = 0, domain = [ 0, 1 ], variate = 1.0 ), numpy.array( [ 0.0, 0.0, 1.0 ] ) ) )
+    
+    def test_quadratic_1st_deriv_at_nodes( self ):
+        self.assertTrue( numpy.allclose( evalBernsteinBasisDeriv1DVector( degree = 2, deriv = 1, domain = [ 0, 1 ], variate = 0.0 ), numpy.array( [ -2.0, 2.0, 0.0 ] ) ) )
+        self.assertTrue( numpy.allclose( evalBernsteinBasisDeriv1DVector( degree = 2, deriv = 1, domain = [ 0, 1 ], variate = 0.5 ), numpy.array( [ -1.0, 0.0, 1.0 ] ) ) )
+        self.assertTrue( numpy.allclose( evalBernsteinBasisDeriv1DVector( degree = 2, deriv = 1, domain = [ 0, 1 ], variate = 1.0 ), numpy.array( [ 0.0, -2.0, 2.0 ] ) ) )
+    
+    def test_quadratic_2nd_deriv_at_nodes( self ):
+        self.assertTrue( numpy.allclose( evalBernsteinBasisDeriv1DVector( degree = 2, deriv = 2, domain = [ 0, 1 ], variate = 0.0 ), numpy.array( [ 2.0, -4.0, 2.0 ] ) ) )
+        self.assertTrue( numpy.allclose( evalBernsteinBasisDeriv1DVector( degree = 2, deriv = 2, domain = [ 0, 1 ], variate = 0.5 ), numpy.array( [ 2.0, -4.0, 2.0 ] ) ) )
+        self.assertTrue( numpy.allclose( evalBernsteinBasisDeriv1DVector( degree = 2, deriv = 2, domain = [ 0, 1 ], variate = 1.0 ), numpy.array( [ 2.0, -4.0, 2.0 ] ) ) )
+    
+class Test_evalSplineBasisDeriv1D( unittest.TestCase ):
+    def test_C0_linear_0th_deriv_at_nodes( self ):
+        C = numpy.eye( 2 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 0, deriv = 0, domain = [ 0, 1 ], variate = 0.0 ), second = 1.0 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 1, deriv = 0, domain = [ 0, 1 ], variate = 0.0 ), second = 0.0 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 0, deriv = 0, domain = [ 0, 1 ], variate = 1.0 ), second = 0.0 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 1, deriv = 0, domain = [ 0, 1 ], variate = 1.0 ), second = 1.0 )
+    
+    def test_C0_linear_1st_deriv_at_nodes( self ):
+        C = numpy.eye( 2 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 0, deriv = 1, domain = [ 0, 1 ], variate = 0.0 ), second = -1.0 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 1, deriv = 1, domain = [ 0, 1 ], variate = 0.0 ), second = +1.0 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 0, deriv = 1, domain = [ 0, 1 ], variate = 1.0 ), second = -1.0 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 1, deriv = 1, domain = [ 0, 1 ], variate = 1.0 ), second = +1.0 )
+    
+    def test_C1_quadratic_0th_deriv_at_nodes( self ):
+        C = numpy.array( [ [ 1.0, 0.0, 0.0 ], [ 0.0, 1.0, 0.5 ], [ 0.0, 0.0, 0.5 ] ] )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 0, deriv = 0, domain = [ 0, 1 ], variate = 0.0 ), second = 1.0 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 1, deriv = 0, domain = [ 0, 1 ], variate = 0.0 ), second = 0.0 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 2, deriv = 0, domain = [ 0, 1 ], variate = 0.0 ), second = 0.0 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 0, deriv = 0, domain = [ 0, 1 ], variate = 0.5 ), second = 0.25 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 1, deriv = 0, domain = [ 0, 1 ], variate = 0.5 ), second = 0.625 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 2, deriv = 0, domain = [ 0, 1 ], variate = 0.5 ), second = 0.125 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 0, deriv = 0, domain = [ 0, 1 ], variate = 1.0 ), second = 0.0 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 1, deriv = 0, domain = [ 0, 1 ], variate = 1.0 ), second = 0.5 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 2, deriv = 0, domain = [ 0, 1 ], variate = 1.0 ), second = 0.5 )
+    
+    def test_C1_quadratic_1st_deriv_at_nodes( self ):
+        C = numpy.array( [ [ 1.0, 0.0, 0.0 ], [ 0.0, 1.0, 0.5 ], [ 0.0, 0.0, 0.5 ] ] )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 0, deriv = 1, domain = [ 0, 1 ], variate = 0.0 ), second = -2.0 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 1, deriv = 1, domain = [ 0, 1 ], variate = 0.0 ), second = +2.0 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 2, deriv = 1, domain = [ 0, 1 ], variate = 0.0 ), second = +0.0 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 0, deriv = 1, domain = [ 0, 1 ], variate = 0.5 ), second = -1.0 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 1, deriv = 1, domain = [ 0, 1 ], variate = 0.5 ), second = +0.5 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 2, deriv = 1, domain = [ 0, 1 ], variate = 0.5 ), second = +0.5 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 0, deriv = 1, domain = [ 0, 1 ], variate = 1.0 ), second = +0.0 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 1, deriv = 1, domain = [ 0, 1 ], variate = 1.0 ), second = -1.0 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 2, deriv = 1, domain = [ 0, 1 ], variate = 1.0 ), second = +1.0 )
+    
+    def test_C1_quadratic_2nd_deriv_at_nodes( self ):
+        C = numpy.array( [ [ 1.0, 0.0, 0.0 ], [ 0.0, 1.0, 0.5 ], [ 0.0, 0.0, 0.5 ] ] )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 0, deriv = 2, domain = [ 0, 1 ], variate = 0.0 ), second = +2.0 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 1, deriv = 2, domain = [ 0, 1 ], variate = 0.0 ), second = -3.0 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 2, deriv = 2, domain = [ 0, 1 ], variate = 0.0 ), second = +1.0 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 0, deriv = 2, domain = [ 0, 1 ], variate = 0.5 ), second = +2.0 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 1, deriv = 2, domain = [ 0, 1 ], variate = 0.5 ), second = -3.0 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 2, deriv = 2, domain = [ 0, 1 ], variate = 0.5 ), second = +1.0 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 0, deriv = 2, domain = [ 0, 1 ], variate = 1.0 ), second = +2.0 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 1, deriv = 2, domain = [ 0, 1 ], variate = 1.0 ), second = -3.0 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 2, deriv = 2, domain = [ 0, 1 ], variate = 1.0 ), second = +1.0 )
+
+    def test_biunit_C0_linear_0th_deriv_at_nodes( self ):
+        C = numpy.eye( 2 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 0, deriv = 0, domain = [ -1, 1 ], variate = -1.0 ), second = 1.0 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 1, deriv = 0, domain = [ -1, 1 ], variate = -1.0 ), second = 0.0 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 0, deriv = 0, domain = [ -1, 1 ], variate = +1.0 ), second = 0.0 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 1, deriv = 0, domain = [ -1, 1 ], variate = +1.0 ), second = 1.0 )
+    
+    def test_biunit_C0_linear_1st_deriv_at_nodes( self ):
+        C = numpy.eye( 2 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 0, deriv = 1, domain = [ -1, 1 ], variate = -1.0 ), second = -0.5 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 1, deriv = 1, domain = [ -1, 1 ], variate = -1.0 ), second = +0.5 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 0, deriv = 1, domain = [ -1, 1 ], variate = +1.0 ), second = -0.5 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 1, deriv = 1, domain = [ -1, 1 ], variate = +1.0 ), second = +0.5 )
+    
+    def test_biunit_C1_quadratic_0th_deriv_at_nodes( self ):
+        C = numpy.array( [ [ 1.0, 0.0, 0.0 ], [ 0.0, 1.0, 0.5 ], [ 0.0, 0.0, 0.5 ] ] )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 0, deriv = 0, domain = [ -1, 1 ], variate = -1.0 ), second = 1.0 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 1, deriv = 0, domain = [ -1, 1 ], variate = -1.0 ), second = 0.0 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 2, deriv = 0, domain = [ -1, 1 ], variate = -1.0 ), second = 0.0 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 0, deriv = 0, domain = [ -1, 1 ], variate = +0.0 ), second = 0.25 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 1, deriv = 0, domain = [ -1, 1 ], variate = +0.0 ), second = 0.625 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 2, deriv = 0, domain = [ -1, 1 ], variate = +0.0 ), second = 0.125 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 0, deriv = 0, domain = [ -1, 1 ], variate = +1.0 ), second = 0.0 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 1, deriv = 0, domain = [ -1, 1 ], variate = +1.0 ), second = 0.5 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 2, deriv = 0, domain = [ -1, 1 ], variate = +1.0 ), second = 0.5 )
+    
+    def test_biunit_C1_quadratic_1st_deriv_at_nodes( self ):
+        C = numpy.array( [ [ 1.0, 0.0, 0.0 ], [ 0.0, 1.0, 0.5 ], [ 0.0, 0.0, 0.5 ] ] )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 0, deriv = 1, domain = [ -1, 1 ], variate = -1.0 ), second = -1.0 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 1, deriv = 1, domain = [ -1, 1 ], variate = -1.0 ), second = +1.0 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 2, deriv = 1, domain = [ -1, 1 ], variate = -1.0 ), second = +0.0 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 0, deriv = 1, domain = [ -1, 1 ], variate = +0.0 ), second = -0.5 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 1, deriv = 1, domain = [ -1, 1 ], variate = +0.0 ), second = +0.25 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 2, deriv = 1, domain = [ -1, 1 ], variate = +0.0 ), second = +0.25 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 0, deriv = 1, domain = [ -1, 1 ], variate = +1.0 ), second = +0.0 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 1, deriv = 1, domain = [ -1, 1 ], variate = +1.0 ), second = -0.5 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 2, deriv = 1, domain = [ -1, 1 ], variate = +1.0 ), second = +0.5 )
+    
+    def test_biunit_C1_quadratic_2nd_deriv_at_nodes( self ):
+        C = numpy.array( [ [ 1.0, 0.0, 0.0 ], [ 0.0, 1.0, 0.5 ], [ 0.0, 0.0, 0.5 ] ] )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 0, deriv = 2, domain = [ -1, 1 ], variate = -1.0 ), second = +0.50 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 1, deriv = 2, domain = [ -1, 1 ], variate = -1.0 ), second = -0.75 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 2, deriv = 2, domain = [ -1, 1 ], variate = -1.0 ), second = +0.25 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 0, deriv = 2, domain = [ -1, 1 ], variate = +0.0 ), second = +0.50 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 1, deriv = 2, domain = [ -1, 1 ], variate = +0.0 ), second = -0.75 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 2, deriv = 2, domain = [ -1, 1 ], variate = +0.0 ), second = +0.25 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 0, deriv = 2, domain = [ -1, 1 ], variate = +1.0 ), second = +0.50 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 1, deriv = 2, domain = [ -1, 1 ], variate = +1.0 ), second = -0.75 )
+        self.assertAlmostEqual( first = evalSplineBasisDeriv1D( extraction_operator = C, basis_idx = 2, deriv = 2, domain = [ -1, 1 ], variate = +1.0 ), second = +0.25 )
 
 class Test_evalLegendreBasis1D( unittest.TestCase ):
     def test_basisAtBounds( self ):
